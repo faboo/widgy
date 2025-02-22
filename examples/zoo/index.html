@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+
+	<script type="module">
+		import * as widgy from './widgy/widgy.js'
+		import * as dialog from './widgy/dialog.js'
+		import * as model from './widgy/model.js'
+
+		const TableData = model.createModel(['id', 'name', 'age'])
+
+		class App extends widgy.Application{
+			constructor(){
+				super()
+				this.buttonText = new widgy.LiveValue('Fun')
+
+				this.addProperty('selectValue', null, this.onSelectValueChanged)
+				this.addProperty('editableSelectValue', null, this.onSelectValueChanged)
+				this.addProperty('boundSelectValue', null, this.onSelectValueChanged)
+				this.addProperty('checked', false)
+				this.addProperty('tableData',
+					new widgy.LiveArray(
+						[ new TableData({id: 101, name: 'Steve', age: 32})
+						, new TableData({id: 201, name: 'Thomas', age: 49})
+						, new TableData({id: 301, name: 'Elma', age: 37})
+						, new TableData({id: 401, name: 'Lori', age: 76})
+						, new TableData({id: 501, name: 'Shemp', age: 18})
+						, new TableData({id: 601, name: 'Andy', age: 23})
+						, new TableData({id: 701, name: 'Eleanore', age: 29})
+						, new TableData({id: 801, name: 'Xavier', age: 52})
+						, new TableData({id: 901, name: 'Garry', age: 45})
+						, new TableData({id: '001', name: 'Bobbi', age: 41})
+						]))
+			}
+
+			onButtonClick(){
+				if(this.buttonText.value == 'Fun')
+					this.buttonText.value = 'Terror'
+				else
+					this.buttonText.value = 'Fun'
+			}
+
+			onSelectValueChanged(event){
+				//debugger
+			}
+
+			openOK(){
+				this.openDialog(dialog.OkDialog, {title: 'Dialog', message: 'Click OK to close'}, this)
+			}
+
+			openOKCancel(){
+				this.openDialog(dialog.OkCancelDialog, {title: 'Dialog', message: 'Click OK or Cancel'}, this)
+			}
+		}
+
+		let app = await widgy.start(App)
+		app.title = 'Widget Zoo'
+	</script>
+
+	<style>
+		body>div {
+			margin-bottom: 1em;
+		}
+
+		.drag {
+			border-width: 1;
+			border-style: solid;
+			border-color: black;
+			padding: 1ex;
+		}
+
+		.draghandle {
+			border-width: 1;
+			border-style: solid;
+			border-color: blue;
+			padding: 1em;
+			width: 4em;
+		}
+
+		drop-counter{
+			display: block;
+			border-width: 1;
+			border-style: solid;
+			border-color: red;
+			padding: 1em;
+			margin-top: 1em;
+		}
+
+		.drop {
+			border-width: 1;
+			border-style: solid;
+			border-color: black;
+			padding: 2em;
+		}
+
+		data-table {
+			width: 50vw;
+			border-style: solid;
+			height: 10vh;
+		}
+		data-table th {
+			border-bottom-style: solid;
+			border-left-style: solid;
+			background: white;
+		}
+		data-table td {
+			border-bottom-style: dotted;
+			border-left-style: dotted;
+		}
+	</style>
+
+	<template id='widgy-template-silly-label'>
+		<div>{label}</div>
+	</template>
+
+	<template id='widgy-template-drop-counter'>
+		<div class='drop' droptarget='true' key='one'>One: {countOne}</div>
+		<div class='drop' droptarget='true' key='two'>Two: {countTwo}</div>
+	</template>
+</head>
+<body>
+	<h1>Hello</h1>
+
+	<p>
+	{buttonText} {editableSelectValue}
+	</p>
+
+	<div>
+		<button onClick="onButtonClick">Press Me for {buttonText}!</button>
+
+		<image-button onClick="onButtonClick" src='cat.jpg'></image-button>
+	</div>
+
+	<div>
+		<silly-label label="Just some text {buttonText}"></silly-label>
+	</div>
+
+	<div>
+		<span>Plain select with inline options</span>
+		<select selected="@<selectValue" id="non-editable" editable="false">
+			<option>one</option>
+			<option>two</option>
+		</select>
+
+		<span>{selectValue}</span>
+	</div>
+
+	<div>
+		<span>Editable select with inline options</span>
+		<select selected="@<editableSelectValue" id="editable" editable="true">
+			<option>foo</option>
+			<option>bar</option>
+		</select>
+
+		<span>{editableSelectValue}</span>
+	</div>
+
+	<div>
+		<span>Plain select with bound options</span>
+		<select selected="@<boundSelectValue" items="@tableData" editable="false">
+			<template>
+				<option value="@item.id">{item.name}</option>
+			</template>
+		</select>
+
+		<span>{boundSelectValue}</span>
+	</div>
+
+	<div>
+		<number-input number="10" step="2" min="0" max="20"></number-input>
+	</div>
+
+	<div>
+		<checkbox checked="@=checked">Check me!</checkbox>
+		<span>Check value: {checked}</span>
+	</div>
+
+	<div>
+		<h2>Drag and Drop</h2>
+
+		<div class="drag" dragtarget='true'>
+			<div class="draghandle" draghandle='true'>
+				=
+			</div>
+		</div>
+
+		<drop-counter></drop-counter>
+
+	</div>
+
+	<div>
+		<h2>Dialogs</h2>
+
+		<button onClick="openOK">Open OK Dialog</button>
+		<button onClick="openOKCancel">Open OK/Cancel Dialog</button>
+	</div>
+
+	<div>
+		<h2>Scrollable Table, With Row Recycling</h2>
+
+		<data-table items="@tableData">
+			<column heading="" width="5">{index}</column>
+			<column heading="ID" width="5">{item.id}</column>
+			<column heading="Name" width="*">{item.name}</column>
+			<column heading="Age" width="10">{item.age}</column>
+		</data-table>
+	</div>
+</body>
+</html>

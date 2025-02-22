@@ -1,0 +1,11 @@
+*.swp
+*.swo
+*.log
+*.pyc
+*.zip
+.lvimrc
+.DS_Store
+.cache
+.vscode
+.coverage
+.pytest_cache

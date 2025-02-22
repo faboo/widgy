@@ -1,0 +1,53 @@
+Data Binding
+-----------
+
+* Add conversion functions
+* Maybe add validation functions
+
+
+Widgets
+-------
+
+* ~~Editable dropdown ("combo box")~~
+* Rewrite builtin replacements (like button) in styles as their widgy- equivalents.
+* Add "widget collections" so widgets can be stored in a sub-directory
+
+
+Live Values
+-----------
+
+* ~~Type hints~~
+
+
+Views
+-----
+
+* Some kind of auto-wrapping array
+
+
+Some kind of calculated size?
+-------
+
+https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/observe
+
+
+IndexDB
+-------
+
+Maybe provide an in-memory fallback for Firefox Private windows?
+
+
+Drag and Drop
+-------
+
+* Touch/mobile drag and drop:
+  https://stackoverflow.com/questions/20927759/html5-drag-and-drop-for-mobile
+
+
+Documentation
+-------
+
+* Application setup
+* Available widgets
+* Data models
+* Custom widgets

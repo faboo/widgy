@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="module">
+		import * as widgy from './widgy/widgy.js'
+
+		class App extends widgy.Application{
+			constructor(){
+				super()
+				this.addProperty('editableSelectValue', null)
+			}
+		}
+
+		widgy.start(App)
+	</script>
+</head>
+<body>
+	<div>
+		<span>Editable select with inline options</span>
+		<select selected="@<editableSelectValue" editable="true">
+			<option>foo</option>
+			<option>bar</option>
+		</select>
+
+		<span>{editableSelectValue}</span>
+	</div>
+</body>
+</html>
+

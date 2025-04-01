@@ -13,6 +13,7 @@ sourceDir=$1
 outputDir=$2
 indexFile=$3
 templates=()
+modules=()
 
 # Find index HTML file
 if [ -n "$indexFile" ]
@@ -100,12 +101,16 @@ function writeTemplate(){
 
 	templates+=($templateFile)
 
+	# Write appropriate template header
 	echo "<template id=\"$templateId\">" >> "$outputDir/$indexName"
-	sed -n -e '2,$ p' $templateFile >> "$outputDir/$indexName"
+	# Write the rest of the template, skipping the template header
+	sed -e '/^<template.*$/ d' $templateFile >> "$outputDir/$indexName"
+	#sed -n -e '2,$ p' $templateFile >> "$outputDir/$indexName"
 }
 
 function processSourceDirectory(){
 	dir=$1
+	srcre=$(echo $sourceDir | sed -e 's/\//\\\//')
 
 	echo Processing directory $dir
 	mkdir -p $(echo $dir | sed -e "s/^$sourceDir/$outputDir/")
@@ -119,13 +124,12 @@ function processSourceDirectory(){
 		then
 			echo "Skipping index file"
 		else
-			# See if this JS file has an associated template
-			if echo $file | grep -q -e .js\$
+			# Preload module files
+			if (echo $file | grep -q -e .js\$) && grep -q -e '^import\|^export' "$file"
 			then
-				templateFile=$(echo $file | sed -e 's/.js$/.html/')
-				if [ -e "$templateFile" ]
-				then writeTemplate $templateFile
-				fi
+				moduleName=$(echo $file | sed -e "s/^$srcre\\///")
+				echo $moduleName is a module
+				modules+=($moduleName)
 			fi
 			# See if this HTML file as an associated controller (and is therefore a template)
 			if echo $file | grep -q -e .html\$
@@ -141,11 +145,23 @@ function processSourceDirectory(){
 	done
 }
 
+function writeModuleLinks(){
+	echo Writing module links
+
+	for file in "${modules[@]}"
+	do
+		echo Writing link $file
+		echo "<link href=\"$file\" rel=\"modulepreload\" />" >> "$outputDir/$indexName"
+	done
+}
+
 mkdir -p "$outputDir"
 
 startIndexFile
 
 processSourceDirectory "$sourceDir"
+
+writeModuleLinks
 
 finishIndexFile
 

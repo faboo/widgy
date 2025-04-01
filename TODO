@@ -43,6 +43,11 @@ Drag and Drop
 * Touch/mobile drag and drop:
   https://stackoverflow.com/questions/20927759/html5-drag-and-drop-for-mobile
 
+Preprocessor
+------------
+
+* ~~Template writer should search for the original template header, rather than just skipping the first line~~
+
 
 Documentation
 -------

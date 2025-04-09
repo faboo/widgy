@@ -135,14 +135,18 @@ export class LiveArray extends Array{
 	#dispatchItemChanged
 	#eventTarget
 
-	constructor(contents){
+	constructor(contents, model){
 		super()
 		this.#dispatchItemChanged = this.dispatchItemChanged.bind(this)
 		this.#eventTarget = new EventTarget()
+		this.model = model
 
 		if(contents){
-			for(let item of contents)
+			for(let item of contents){
+				if(model && !(item instanceof model))
+					item = new model(item)
 				this.push(item)
+			}
 		}
 	}
 
@@ -165,11 +169,17 @@ export class LiveArray extends Array{
 		return this[index].value
 	}
 
-	to(index, value){
-		this[index].value  = value
+	to(index, item){
+		if(!(item instanceof this.model))
+			item = new this.model(item)
+
+		this[index].value = item
 	}
 
 	push(item){
+		if(this.model && !(item instanceof this.model))
+			item = new this.model(item)
+
 		let live = new LiveValue(
 			item,
 			null,
@@ -217,8 +227,12 @@ export class LiveArray extends Array{
 		let deletedDead = []
 
 		for(let idx = 2; idx < arguments.length; ++idx){
+			let item = arguments[idx]
+			if(this.model && !(item instanceof this.model))
+				item = new this.model(item)
+
 			arguments[idx] = new LiveValue(
-					arguments[idx],
+					item,
 					null,
 					this)
 			arguments[idx].addEventListener('setvalue', this.#dispatchItemChanged)

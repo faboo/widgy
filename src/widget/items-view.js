@@ -27,7 +27,13 @@ export default class ItemsView extends Widget{
 	}
 
 	getTemplate(root){
-		return root.querySelector('template').content
+		try{
+			return root.querySelector('template').content
+		}
+		catch(ex){
+			let items = root.getAttribute('items')
+			throw Error(`Error getting template for items-view (items=${items}): ${ex.message}`)
+		}
 	}
 
 	async bind(context, root){

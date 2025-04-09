@@ -9,6 +9,7 @@ export default class Button extends ContentWidget{
 		super()
 
 		this.addProperty('default', false, this.onDefaultChanged.bind(this), Boolean)
+		this.addProperty('data')
 		this.#onClick = this.addEventSlot('onClick')
 		this.addBooleanAttribute('disabled', 'button')
 
@@ -35,7 +36,7 @@ export default class Button extends ContentWidget{
 	onButtonClick(event){
 		event.preventDefault()
 
-		this.#onClick.trigger()
+		this.#onClick.trigger(this.data)
 	}
 
 	onEnterPressed(event){

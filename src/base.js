@@ -143,7 +143,7 @@ export class Widgy extends LiveObject{
 				widgetClass = module.default
 			}
 			catch(ex){
-				if(ex instanceof TypeError && ex.message.includes('dynamically imported module')){
+				if(ex instanceof TypeError && ex.message.includes('module')){
 					try{
 						module = await import(Widgy.customWidgetBase+'/'+name+'.js')
 

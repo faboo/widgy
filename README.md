@@ -31,6 +31,23 @@ Live Property Gotchas
 Because updating live properties of widgets and models can trigger calling complex event handlers, avoid updating live
 properties in a loop.
 
+Binding
+-------
+
+Attributes can be bound widget properties with the '@'. For example:
+
+    <text-input text="@mytext"></text-input>
+
+By default, changes to the `mytext` property will update the `text` property of the text-input element. That is, the
+direction of the binding is "from" `mytext` "to" `text`.
+
+You can specify the direction of the binding by adding one of '<', '>', or '=' after the '@'.
+
+    Toward target: >
+    Toward source: <
+    Both ways: =
+
+
 Copyright
 ---------
 

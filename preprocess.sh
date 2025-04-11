@@ -125,7 +125,7 @@ function processSourceDirectory(){
 			echo "Skipping index file"
 		else
 			# Preload module files
-			if (echo $file | grep -q -e .js\$) && grep -q -e '^import\|^export' "$file"
+			if (echo $file | grep -q -e '.m?js'\$) && grep -q -e '^import\|^export' "$file"
 			then
 				moduleName=$(echo $file | sed -e "s/^$srcre\\///")
 				echo $moduleName is a module
@@ -135,7 +135,8 @@ function processSourceDirectory(){
 			if echo $file | grep -q -e .html\$
 			then
 				controllerFile=$(echo $file | sed -e 's/.html$/.js/')
-				if [ -e "$controllerFile" ]
+				controllerMod=$(echo $file | sed -e 's/.html$/.mjs/')
+				if [ -e "$controllerFile" || -e "$controllerMod" ]
 				then writeTemplate $file
 				fi
 			fi

@@ -44,7 +44,7 @@ export default class ItemsView extends Widget{
 
 		if(this.items)
 			for(let idx = 0; idx < this.items.length; ++idx){
-				let element = this.createItemElement()
+				let element = this.createItemElement(this.items[idx])
 
 				await this.bindItemElement(element, this.items[idx], idx)
 
@@ -52,7 +52,7 @@ export default class ItemsView extends Widget{
 			}
 	}
 
-	createItemElement(){
+	createItemElement(item){
 		let root = document.createElement('item-view')
 
 		root.appendChild(this.#template.cloneNode(true))
@@ -103,7 +103,7 @@ export default class ItemsView extends Widget{
 						}
 					}
 					else{
-						let element = this.createItemElement()
+						let element = this.createItemElement(this.items[idx])
 
 						// No need to wait for this.
 						this.bindItemElement(element, this.items[idx], idx)

@@ -221,6 +221,21 @@ export class Widgy extends LiveObject{
 		return this.#children
 	}
 
+	sleep(until, msdelay){
+		if(!msdelay)
+			msdelay = 1
+
+		return new Promise((resolve) => {
+			function finished(){
+				if(until())
+					resolve(true)
+				else
+					setTimeout(finished, msdelay)
+			}
+			setTimeout(finished, msdelay)
+		})
+	}
+
 	firstElement(selector){
 		let root = this.root.shadowRoot || this.root
 

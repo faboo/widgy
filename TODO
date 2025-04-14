@@ -11,6 +11,7 @@ Widgets
 * ~~Editable dropdown ("combo box")~~
 * Rewrite builtin replacements (like button) in styles as their widgy- equivalents.
 * Add "widget collections" so widgets can be stored in a sub-directory
+* Change dialog to use :modal and showModal()
 
 
 Live Values

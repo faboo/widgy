@@ -19,6 +19,7 @@ export class Widget extends Widgy{
 
 		this.addProperty('application')
 		this.addProperty('parent')
+		this.addProperty('shown', null, this.onShownChanged)
 
 		/* Drag and Drop */
 		this.addProperty('dragdata')
@@ -43,6 +44,11 @@ export class Widget extends Widgy{
 
 	get bound(){
 		return this.#bound
+	}
+
+	onShownChanged(){
+		if(this.shown !== null)
+			this.hidden = !this.shown
 	}
 
 	addProperty(name, initialValue, onChange, coerceType){
@@ -140,21 +146,6 @@ export class Widget extends Widgy{
 				this.firstElement(this.#booleanAttributes[attr]).removeAttribute(attr)
 			}
 		}
-	}
-
-	sleep(until, msdelay){
-		if(!msdelay)
-			msdelay = 1
-
-		return new Promise((resolve) => {
-			function finished(){
-				if(until())
-					resolve(true)
-				else
-					setTimeout(finished, msdelay)
-			}
-			setTimeout(finished, msdelay)
-		})
 	}
 
 	createRoot(){

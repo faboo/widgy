@@ -289,7 +289,6 @@ export class LiveArray extends Array{
 	// reverse
 	// slice
 	// some
-	// sort
 
 	addEventListener(type, listener){
 		this.#eventTarget.addEventListener(type, listener)

@@ -3,6 +3,7 @@ import ContentWidget from './contentWidget.js'
 export default class Button extends ContentWidget{
 	#button
 	#onClick
+	#onMousedown
 	#onEnterPressed
 
 	constructor(){
@@ -10,7 +11,8 @@ export default class Button extends ContentWidget{
 
 		this.addProperty('default', false, this.onDefaultChanged.bind(this), Boolean)
 		this.addProperty('data')
-		this.#onClick = this.addEventSlot('onClick')
+		this.#onClick = this.addEventSlot('onclick')
+		this.#onMousedown = this.addEventSlot('onmousedown')
 		this.addBooleanAttribute('disabled', 'button')
 
 		this.#onEnterPressed = this.onEnterPressed.bind(this)
@@ -22,6 +24,7 @@ export default class Button extends ContentWidget{
 		this.#button = this.firstElement('button')
 
 		this.#button.addEventListener('click', this.onButtonClick.bind(this))
+		this.#button.addEventListener('mousedown', this.onButtonMousedown.bind(this))
 	}
 
 	onDefaultChanged(event){
@@ -37,6 +40,10 @@ export default class Button extends ContentWidget{
 		event.preventDefault()
 
 		this.#onClick.trigger(this.data)
+	}
+
+	onButtonMousedown(event){
+		this.#onMousedown.trigger(this.data)
 	}
 
 	onEnterPressed(event){

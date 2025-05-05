@@ -280,8 +280,15 @@ export class BindingExpression extends EventTarget{
 		if(name){
 			liveValue = object[name]
 
-			if(!(liveValue instanceof EventTarget))
-				liveValue = object[propertyName]
+			if(!(liveValue instanceof EventTarget)){
+				if(object instanceof HTMLElement && !(propertyName in object)){
+					liveValue = new LiveAttribute(liveValue, name, object)
+					liveValue.bind(object)
+				}
+				else{
+					liveValue = object[propertyName]
+				}
+			}
 		}
 
 		return liveValue

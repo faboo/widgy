@@ -66,7 +66,7 @@ export class Widgy extends LiveObject{
 		for(let idx = 0; idx < styleParts.length; idx++){
 			let rule = styleParts[idx].trimStart()
 
-			if(rule.length && !rule.startsWith('@media')){
+			if(rule.length && !rule.startsWith('@')){
 				if(rule[0] == '{'){
 					styleParts[idx] = '\n'+prefix+' '+rule
 				}

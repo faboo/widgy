@@ -17,7 +17,8 @@ export default class Tabs extends Selector{
 		let widget
 
 		if(element.nodeName.toLowerCase() == 'buttons'){
-			widget = this.buildTabs(element)
+			widget = element
+			this.buildTabs(element)
 		}
 		else{
 			widget = super.getSpecialWidget(element)
@@ -46,8 +47,6 @@ export default class Tabs extends Selector{
 		}
 
 		this.#buttons = buttons
-
-		return buttons
 	}
 
 	onTabClicked(event){

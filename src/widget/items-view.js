@@ -27,13 +27,19 @@ export default class ItemsView extends Widget{
 	}
 
 	getTemplate(root){
-		try{
-			return root.querySelector('template').content
+		let template = null
+
+		for(let child of root.children)
+			if(child.localName == 'template')
+				template = child
+
+		if(template === null){
+			template = document.createElement('template')
+			while(root.children.length)
+				template.content.appendChild(root.children[0])
 		}
-		catch(ex){
-			let items = root.getAttribute('items')
-			throw Error(`Error getting template for items-view (items=${items}): ${ex.message}`)
-		}
+
+		return template.content
 	}
 
 	async bind(context, root){

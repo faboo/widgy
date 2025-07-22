@@ -40,6 +40,41 @@ class ValueChangeEvent extends Event{
 }
 
 
+class DeadValue extends EventTarget{
+	#name
+	#object
+
+	constructor(name, object){
+		super()
+		this.#name = name
+		this.#object = object
+	}
+
+	get name(){
+		return this.#name
+	}
+
+	get object(){
+		return this.#object
+	}
+
+	get value(){
+		return this.#object[this.#name]
+	}
+
+	set value(value){
+		this.#object[this.#name] = value
+	}
+
+	get changing(){
+		return false
+	}
+
+	addListener(listener){
+	}
+}
+
+
 export class LiveValue extends EventTarget{
 	#value
 	#name
@@ -285,8 +320,11 @@ export class BindingExpression extends EventTarget{
 					liveValue = new LiveAttribute(liveValue, name, object)
 					liveValue.bind(object)
 				}
-				else{
+				else if(object[propertyName] instanceof LiveValue){
 					liveValue = object[propertyName]
+				}
+				else{
+					liveValue = new DeadValue(name, object)
 				}
 			}
 		}

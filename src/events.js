@@ -5,6 +5,10 @@ export function isListenable(object){
 		object.addEventListener
 		&& 
 		object.removeEventListener
+		&&
+		object.addListener
+		&&
+		'value' in object
 		)
 }
 
@@ -36,41 +40,6 @@ class ValueChangeEvent extends Event{
 
 	get oldValue(){
 		return this.#oldValue
-	}
-}
-
-
-class DeadValue extends EventTarget{
-	#name
-	#object
-
-	constructor(name, object){
-		super()
-		this.#name = name
-		this.#object = object
-	}
-
-	get name(){
-		return this.#name
-	}
-
-	get object(){
-		return this.#object
-	}
-
-	get value(){
-		return this.#object[this.#name]
-	}
-
-	set value(value){
-		this.#object[this.#name] = value
-	}
-
-	get changing(){
-		return false
-	}
-
-	addListener(listener){
 	}
 }
 
@@ -178,6 +147,109 @@ export class LiveValue extends EventTarget{
 			//console.log('Value '+this.name+' updated to '+this.value)
 			this.dispatchEvent(new ValueChangeEvent(this, oldValue))
 		}
+	}
+
+	addListener(listener){
+		let event = new ValueChangeEvent(this)
+		this.addEventListener('setvalue', listener)
+
+		if(listener instanceof Function)
+			listener(event)
+		else
+			listener.handleEvent(event)
+	}
+}
+
+
+class DeadValue extends EventTarget{
+	#name
+	#object
+
+	constructor(name, object){
+		super()
+		this.#name = name
+		this.#object = object
+	}
+
+	get name(){
+		return this.#name
+	}
+
+	get object(){
+		return this.#object
+	}
+
+	get value(){
+		return this.#object[this.#name]
+	}
+
+	set value(value){
+		this.#object[this.#name] = value
+	}
+
+	get changing(){
+		return false
+	}
+
+	addListener(listener){
+	}
+}
+
+
+export class CompositeValue extends EventTarget{
+	#value
+	#name
+	#object
+	#watch
+	#evaluate
+	#changing
+	#onWatchChanged
+
+	constructor(name, object, watchProperties, evaluateCallback){
+		super()
+		this.#name = name
+		this.#object = object
+		this.#changing = true
+		this.#watch = watchProperties
+		this.#evaluate = evaluateCallback.bind(object)
+		this.#value = null
+		this.#onWatchChanged = this.onWatchChanged.bind(this)
+
+		for(let watch of this.#watch){
+			watch.addEventListener('setvalue', this.#onWatchChanged)
+			if(isListenable(watch.value))
+				watch.value.addEventListener('setvalue', this.#onWatchChanged)
+		}
+
+		this.onWatchChanged()
+	}
+
+	get name(){
+		return this.#name
+	}
+
+	get object(){
+		return this.#object
+	}
+
+	get value(){
+		return this.#value
+	}
+
+	set value(value){
+		// do nothing
+	}
+
+	onWatchChanged(oldValue, newValue){
+		this.#changing = true
+
+		if(isListenable(oldValue))
+			oldValue.removeEventListener('setvalue', this.#onWatchChanged)
+		if(isListenable(newValue))
+			newValue.addEventListener('setvalue', this.#onWatchChanged)
+
+		this.#value = this.#evaluate(this.#watch.map(wc => wc.value))
+		this.#changing = true
 	}
 
 	addListener(listener){
@@ -320,7 +392,7 @@ export class BindingExpression extends EventTarget{
 					liveValue = new LiveAttribute(liveValue, name, object)
 					liveValue.bind(object)
 				}
-				else if(object[propertyName] instanceof LiveValue){
+				else if(isListenable(object[propertyName])){
 					liveValue = object[propertyName]
 				}
 				else{
@@ -362,7 +434,7 @@ export class BindingExpression extends EventTarget{
 		}
 
 		this.sourceValues.push(live)
-		if(live instanceof LiveValue)
+		if(isListenable(live))
 			live.addListener(this.#onSourceChanged)
 		else
 			this.onSourceChanged({value: live})

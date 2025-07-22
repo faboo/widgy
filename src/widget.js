@@ -1,5 +1,5 @@
 import {Widgy} from './base.js'
-import {LiveValue, BindingExpression} from './events.js'
+import {isListenable, BindingExpression} from './events.js'
 
 
 export class Widget extends Widgy{
@@ -164,10 +164,10 @@ export class Widget extends Widgy{
 			if(this.hasEventSlot(attr.name)){
 				this.bindEvent(attr.name, context, attr.value)
 			}
-			else if(this[attr.name] instanceof LiveValue){
+			else if(isListenable(this[attr.name])){
 				this.bindProperty(context, attr.name, attr.value)
 			}
-			else if(this[attr.name+'Property'] instanceof LiveValue){
+			else if(isListenable(this[attr.name+'Property'])){
 				this.bindProperty(context, attr.name+'Property', attr.value)
 			}
 			else{

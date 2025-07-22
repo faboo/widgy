@@ -1,6 +1,6 @@
 import {Widgy} from '../base.js'
 import {Widget} from '../widget.js'
-import {LiveValue} from '../events.js'
+import {isListenable} from '../events.js'
 
 export default class Dialog extends Widget{
 	baseTemplate
@@ -46,10 +46,10 @@ export default class Dialog extends Widget{
 			if(this.hasEventSlot(attr.name)){
 				this.bindEvent(attr.name, context, attr.value)
 			}
-			else if(this[attr.name] instanceof LiveValue){
+			else if(isListenable(this[attr.name])){
 				this.bindProperty(context, attr.name, attr.value)
 			}
-			else if(this[attr.name+'Property'] instanceof LiveValue){
+			else if(isListenable(this[attr.name+'Property'])){
 				this.bindProperty(context, attr.name+'Property', attr.value)
 			}
 		}

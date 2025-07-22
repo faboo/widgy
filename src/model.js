@@ -1,4 +1,4 @@
-import {LiveValue} from './events.js'
+import {LiveValue, CompositeValue, isListenable} from './events.js'
 
 export class LiveObject{
 	addProperty(name, initialValue, onChange, coerceType){
@@ -12,6 +12,27 @@ export class LiveObject{
 				}
 			, [nameProperty]:
 				{ value: new LiveValue(initialValue, name, this, coerceType)
+				, writable: false
+				, enumerable: false
+				}
+			})
+
+		if(onChange){
+			this[nameProperty].addEventListener('setvalue', onChange.bind(this))
+		}
+	}
+
+	addCompositeProperty(name, watchProperties, evaluateCallback, onChange){
+		let nameProperty = name+'Property'
+		Object.defineProperties(
+			this,
+			{ [name]:
+				{ get: () => this[nameProperty].value
+				, set: (value) => this[nameProperty].value
+				, enumerable: true
+				}
+			, [nameProperty]:
+				{ value: new CompositeValue(name, this, watchProperties, evaluateCallback)
 				, writable: false
 				, enumerable: false
 				}
@@ -77,7 +98,7 @@ export class LiveObject{
 	getPropertyString(property){
 		let value = this.getPropertyValue(property)
 
-		if(value instanceof LiveValue)
+		if(isListenable(value))
 			value = value.value
 
 		return String(value)
@@ -319,7 +340,7 @@ export class LiveArray extends Array{
 
 export class Model extends LiveObject{
     loadFromTemplate(template){
-		if(template instanceof LiveValue)
+		if(isListenable(template))
 			template = template.value
 
         for(let prop in this){

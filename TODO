@@ -18,6 +18,7 @@ Live Values
 -----------
 
 * ~~Type hints~~
+* Destroy LiveText and include it in unbind
 
 
 Views

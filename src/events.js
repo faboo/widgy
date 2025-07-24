@@ -335,6 +335,7 @@ export const BindingDirection =
 
 export class BindingExpression extends EventTarget{
 	#onSourceChanged
+	#onTargetChanged
 
 	binding
 	direction
@@ -350,6 +351,7 @@ export class BindingExpression extends EventTarget{
 		super()
 
 		this.#onSourceChanged = this.onSourceChanged.bind(this)
+		this.#onTargetChanged = this.onTargetChanged.bind(this)
 
 		this.binding = binding
 
@@ -419,7 +421,7 @@ export class BindingExpression extends EventTarget{
 	}
 
 	bindTarget(){
-		this.targetValue.addListener(this.onTargetChanged.bind(this))
+		this.targetValue.addListener(this.#onTargetChanged)
 	}
 
 	bindSource(){
@@ -489,12 +491,19 @@ export class BindingExpression extends EventTarget{
 
 			if(this.setTarget)
 				if(this.targetValue)
-					this.targetValue.value = this.source
+					this.targetValue.value = this.currentValue
 				else if(this.target)
 					this.target[this.targetName] = this.currentValue
 
 			this.dispatchEvent(new ValueChangeEvent(this, oldValue))
 		}
+	}
+
+	destroy(){
+		for(let value of this.sourceValues)
+			value.removeEventListener('setvalue', this.#onSourceChanged)
+
+		this.targetValue.removeEventListener('setvalue', this.#onTargetChanged)
 	}
 }
 

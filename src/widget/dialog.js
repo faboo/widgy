@@ -25,6 +25,7 @@ export default class Dialog extends Widget{
 
 	close(){
 		this.root.parentElement.removeChild(this.root)
+		this.unbind()
 		this.triggerEvent('onClose')
 	}
 

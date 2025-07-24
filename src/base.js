@@ -207,6 +207,7 @@ export class Widgy extends LiveObject{
 	root
 	#children
 	#eventSlots
+	#bindings
 	// TODO: Move this concept into Widget
 	#attributeSlots
 
@@ -215,6 +216,7 @@ export class Widgy extends LiveObject{
 		this.#eventSlots = {}
 		this.#attributeSlots = []
 		this.#children = {}
+		this.#bindings = []
 	}
 
 	get children(){
@@ -267,6 +269,13 @@ export class Widgy extends LiveObject{
 
 	hasEventSlot(name){
 		return name in this.#eventSlots
+	}
+
+	createBindingExpression(binding, context, target, targetName){
+		let bind = new BindingExpression(binding, context, target, targetName)
+		this.#bindings.push(bind)
+
+		return bind
 	}
 
 	bindEvent(name, context, callback){
@@ -343,12 +352,17 @@ export class Widgy extends LiveObject{
 	async bind(context, root){
 	}
 
+	unbind(){
+		for(let binding of this.#bindings)
+			binding.destroy()
+	}
+
 	resolveCompositeValue(context, target, name, value){
 		let resolvedValue = value
 
 		if(value){
 			if(value.startsWith('@')){
-				resolvedValue = new BindingExpression(
+				resolvedValue = this.createBindingExpression(
 					value.slice(1),
 					context,
 					target,

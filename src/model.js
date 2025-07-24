@@ -345,7 +345,7 @@ export class Model extends LiveObject{
 
         for(let prop in this){
             if(prop in template){
-				if(this[prop] instanceof LiveArray){
+				if(this[prop] instanceof Array){
 					this[prop].splice(0)
 					
 					for(let item of template[prop]){

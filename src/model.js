@@ -282,6 +282,10 @@ export class LiveArray extends Array{
 		return super.findIndex(item => func(item.value))
 	}
 
+	find(func){
+		return super.find(item => func(item.value))
+	}
+
 	join(sep){
 		return this.values().join(sep)
 	}
@@ -297,7 +301,6 @@ export class LiveArray extends Array{
 	// every
 	// fill
 	// filter
-	// find
 	// flatMap
 	// forEach
 	// includes

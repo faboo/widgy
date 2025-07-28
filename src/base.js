@@ -104,7 +104,7 @@ export class Widgy extends LiveObject{
 		}
 
 		if(template){
-			for(let node of template.content.children){
+			for(let node of Array.prototype.slice.call(template.content.childNodes)){
 				if(node.nodeName == 'STYLE'){
 					let style = Widgy.processStyle(safeName, node.textContent)
 					let styleElement = document.createElement('style')
@@ -114,6 +114,9 @@ export class Widgy extends LiveObject{
 
 					document.head.appendChild(styleElement)
 
+					template.content.removeChild(node)
+				}
+				else if(node.nodeName == '#text' && node.nodeValue.match('^\\s*$')){
 					template.content.removeChild(node)
 				}
 			}

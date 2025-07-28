@@ -283,7 +283,9 @@ export class LiveArray extends Array{
 	}
 
 	find(func){
-		return super.find(item => func(item.value))
+		let item = super.find(item => func(item.value))
+
+		return item !== undefined? item.value : undefined
 	}
 
 	join(sep){

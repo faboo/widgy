@@ -160,6 +160,7 @@ export class LiveArray extends Array{
 		super()
 		this.#dispatchItemChanged = this.dispatchItemChanged.bind(this)
 		this.#eventTarget = new EventTarget()
+		this.eventTarget = this.#eventTarget
 		this.model = model
 
 		if(contents){

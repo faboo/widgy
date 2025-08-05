@@ -240,15 +240,31 @@ export class CompositeValue extends EventTarget{
 		// do nothing
 	}
 
-	onWatchChanged(oldValue, newValue){
+	recalculate(){
+		this.#changing = true
+		this.#value = this.#evaluate(this.#watch.map(wc => wc.value))
+		this.#changing = true
+	}
+
+	onWatchChanged(event){
 		this.#changing = true
 
-		if(isListenable(oldValue))
-			oldValue.removeEventListener('setvalue', this.#onWatchChanged)
-		if(isListenable(newValue))
-			newValue.addEventListener('setvalue', this.#onWatchChanged)
+		if(event instanceof ValueChangeEvent){
+			let newValue = event.value
+			let oldValue = event.oldValue
 
-		this.#value = this.#evaluate(this.#watch.map(wc => wc.value))
+			if(isListenable(oldValue))
+				oldValue.removeEventListener('setvalue', this.#onWatchChanged)
+			if(isListenable(newValue))
+				newValue.addEventListener('setvalue', this.#onWatchChanged)
+		}
+
+		let value = this.#evaluate(this.#watch.map(wc => wc.value))
+		if(value != this.#value){
+			let oldValue = this.#value
+			this.#value = value
+			this.dispatchEvent(new ValueChangeEvent(this, oldValue))
+		}
 		this.#changing = true
 	}
 

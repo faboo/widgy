@@ -192,6 +192,15 @@ class DeadValue extends EventTarget{
 	}
 
 	addListener(listener){
+		let event = new ValueChangeEvent(this)
+
+		// The value will never change, but we're expected to fire at least
+		// once.
+
+		if(listener instanceof Function)
+			listener(event)
+		else
+			listener.handleEvent(event)
 	}
 }
 

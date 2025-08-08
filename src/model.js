@@ -279,6 +279,12 @@ export class LiveArray extends Array{
 		return values
 	}
 
+	filter(func){
+		let filtered = super.filter(item => func(item.value))
+
+		return new LiveArray(filtered, this.model)
+	}
+
 	findIndex(func){
 		return super.findIndex(item => func(item.value))
 	}
@@ -303,7 +309,6 @@ export class LiveArray extends Array{
 	// entries
 	// every
 	// fill
-	// filter
 	// flatMap
 	// forEach
 	// includes

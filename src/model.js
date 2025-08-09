@@ -163,6 +163,14 @@ export class LiveArray extends Array{
 		this.eventTarget = this.#eventTarget
 		this.model = model
 
+		Object.defineProperty(
+			this,
+			'lengthProperty',
+			{ value: new LiveValue(0, 'length', this, Number)
+			, writable: false
+			, enumerable: false
+			})
+
 		if(contents){
 			for(let item of contents){
 				if(model && !(item instanceof model))
@@ -208,6 +216,8 @@ export class LiveArray extends Array{
 			this)
 		let result = super.push(live)
 
+		this.lengthProperty.value = this.length
+
 		live.addEventListener('setvalue', this.#dispatchItemChanged)
 		this.dispatchItemChanged()
 
@@ -217,6 +227,8 @@ export class LiveArray extends Array{
 	pop(){
 		let live = super.pop()
 
+		this.lengthProperty.value = this.length
+
 		live.removeEventListener('setvalue', this.#dispatchItemChanged)
 		this.dispatchItemChanged()
 
@@ -225,6 +237,8 @@ export class LiveArray extends Array{
 
 	shift(){
 		let live = super.shift()
+
+		this.lengthProperty.value = this.length
 
 		live.removeEventListener('setvalue', this.#dispatchItemChanged)
 		this.dispatchItemChanged()
@@ -238,6 +252,8 @@ export class LiveArray extends Array{
 			null,
 			this)
 		let result = super.unshift(live)
+
+		this.lengthProperty.value = this.length
 
 		live.addEventListener('setvalue', this.#dispatchItemChanged)
 		this.dispatchItemChanged()
@@ -264,6 +280,8 @@ export class LiveArray extends Array{
 			item.removeEventListener('setvalue', this.#dispatchItemChanged)
 			deletedDead.push(item.value)
 		}
+
+		this.lengthProperty.value = this.length
 
 		this.dispatchItemChanged()
 

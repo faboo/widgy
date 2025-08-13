@@ -22,13 +22,13 @@ export default class TextInput extends Widget{
 		input.addEventListener('keyup', this.completeText.bind(this))
 	}
 
-	async completeText(){
+	async completeText(event){
 		if(!this.completer) return
 
 		let input = this.firstElement('input')
 		let cursorPos = input.selectionStart
 
-		if(input.value && cursorPos == input.value.length){
+		if(event.key !== 'Backspace' && input.value && cursorPos == input.value.length){
 			try{
 				let fill = this.completer(input.value)
 

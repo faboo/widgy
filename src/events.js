@@ -249,13 +249,20 @@ export class CompositeValue extends EventTarget{
 		// do nothing
 	}
 
-	recalculate(){
-		this.#changing = true
-		this.#value = this.#evaluate(this.#watch.map(wc => wc.value))
-		this.#changing = true
+	get changing(){
+		return this.#changing
 	}
 
-	onWatchChanged(event){
+	async recalculate(){
+		this.#changing = true
+		let value = this.#evaluate(this.#watch.map(wc => wc.value))
+		if(value instanceof Promise)
+			value = await value
+		this.#value = value
+		this.#changing = false
+	}
+
+	async onWatchChanged(event){
 		this.#changing = true
 
 		if(event instanceof ValueChangeEvent){
@@ -269,12 +276,16 @@ export class CompositeValue extends EventTarget{
 		}
 
 		let value = this.#evaluate(this.#watch.map(wc => wc.value))
+
+		if(value instanceof Promise)
+			value = await value
+
 		if(value != this.#value){
 			let oldValue = this.#value
 			this.#value = value
 			this.dispatchEvent(new ValueChangeEvent(this, oldValue))
 		}
-		this.#changing = true
+		this.#changing = false
 	}
 
 	addListener(listener){

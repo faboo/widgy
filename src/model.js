@@ -155,13 +155,13 @@ export class LiveArray extends Array{
 
 	#dispatchItemChanged
 	#eventTarget
+	#model
 
 	constructor(contents, model){
 		super()
 		this.#dispatchItemChanged = this.dispatchItemChanged.bind(this)
 		this.#eventTarget = new EventTarget()
-		this.eventTarget = this.#eventTarget
-		this.model = model
+		this.#model = model
 
 		Object.defineProperty(
 			this,
@@ -200,15 +200,15 @@ export class LiveArray extends Array{
 	}
 
 	to(index, item){
-		if(!(item instanceof this.model))
-			item = new this.model(item)
+		if(this.#model && !(item instanceof this.#model))
+			item = new this.#model(item)
 
 		this[index].value = item
 	}
 
 	push(item){
-		if(this.model && !(item instanceof this.model))
-			item = new this.model(item)
+		if(this.#model && !(item instanceof this.#model))
+			item = new this.#model(item)
 
 		let live = new LiveValue(
 			item,
@@ -266,8 +266,8 @@ export class LiveArray extends Array{
 
 		for(let idx = 2; idx < arguments.length; ++idx){
 			let item = arguments[idx]
-			if(this.model && !(item instanceof this.model))
-				item = new this.model(item)
+			if(this.#model && !(item instanceof this.#model))
+				item = new this.#model(item)
 
 			arguments[idx] = new LiveValue(
 					item,
@@ -300,7 +300,7 @@ export class LiveArray extends Array{
 	filter(func){
 		let filtered = super.filter(item => func(item.value))
 
-		return new LiveArray(filtered, this.model)
+		return new LiveArray(filtered, this.#model)
 	}
 
 	findIndex(func){

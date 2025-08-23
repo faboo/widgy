@@ -12,7 +12,7 @@ export function isListenable(object){
 		)
 }
 
-class ValueChangeEvent extends Event{
+export class ValueChangeEvent extends Event{
 	#name
 	#object
 	#value
@@ -650,7 +650,7 @@ export class LiveText{
 }
 
 
-class SlottedEvent extends Event{
+export class SlottedEvent extends Event{
 	data
 
 	constructor(widget, data){

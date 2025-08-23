@@ -313,8 +313,24 @@ export class LiveArray extends Array{
 		return item !== undefined? item.value : undefined
 	}
 
+	forEach(func){
+		return super.forEach(item => func(item.value))
+	}
+
 	join(sep){
 		return this.values().join(sep)
+	}
+
+	map(func){
+		return super.map(item => func(item.value))
+	}
+
+	reduce(func, init){
+		return super.reduce((accum, item) => func(accum, item.value), init)
+	}
+
+	reduceRight(func, init){
+		return super.reduceRight((accum, item) => func(accum, item.value), init)
 	}
 
 	sort(compareFn){
@@ -333,8 +349,6 @@ export class LiveArray extends Array{
 	// indexOf
 	// keys
 	// lastIndexOf
-	// map
-	// reduce
 	// reduceRight
 	// reverse
 	// slice

@@ -136,7 +136,7 @@ function processSourceDirectory(){
 			then
 				controllerFile=$(echo $file | sed -e 's/.html$/.js/')
 				controllerMod=$(echo $file | sed -e 's/.html$/.mjs/')
-				if [ -e "$controllerFile" || -e "$controllerMod" ]
+				if [[ -e "$controllerFile" || -e "$controllerMod" ]]
 				then writeTemplate $file
 				fi
 			fi

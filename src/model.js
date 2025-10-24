@@ -333,6 +333,13 @@ export class LiveArray extends Array{
 		return super.reduceRight((accum, item) => func(accum, item.value), init)
 	}
 
+	some(func, thisArg){
+		return super.some(item =>
+			thisArg !== undefined
+			? func.call(thisArg, item.value)
+			: func(item.value))
+	}
+
 	sort(compareFn){
 		this.sort(compareFn)
 
@@ -352,7 +359,6 @@ export class LiveArray extends Array{
 	// reduceRight
 	// reverse
 	// slice
-	// some
 
 	addEventListener(type, listener){
 		this.#eventTarget.addEventListener(type, listener)

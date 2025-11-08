@@ -629,6 +629,16 @@ export class LiveTextValue extends EventTarget {
 
 		this.dispatchEvent(new ValueChangeEvent(this, oldValue))
 	}
+
+	addListener(listener){
+		let event = new ValueChangeEvent(this)
+		this.addEventListener('setvalue', listener)
+
+		if(listener instanceof Function)
+			listener(event)
+		else
+			listener.handleEvent(event)
+	}
 }
 
 

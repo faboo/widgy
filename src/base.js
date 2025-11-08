@@ -57,7 +57,7 @@ export class Widgy extends LiveObject{
 	static template = null
 
 	static parseFragment(html){
-        return Widgy.#domParser.parseFromString(html, 'text/html').querySelector('template')
+				return Widgy.#domParser.parseFromString(html.trim(), 'text/html').querySelector('template')
 	}
 
 	static processStyle(prefix, style){
@@ -471,6 +471,8 @@ export class Widgy extends LiveObject{
 				else{
 					if(isListenable(child[name]))
 						child[name].value = value
+					else if(isListenable(value))
+						child[name] = value.value
 					else
 						child[name] = value
 				}

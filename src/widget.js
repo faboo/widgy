@@ -1,27 +1,34 @@
-import {Widgy} from './base.js'
-import {isListenable, BindingExpression} from './events.js'
+import {Binder, addProperty} from './base.js'
+import {isListenable, BindingExpression, LiveTextValue, LiveText} from './events.js'
 
 
-export class Widget extends Widgy{
-	static elementName = null
-	static safeElementName = null
-	static custom = false
+export class Widget extends HTMLElement{
+	static #domParser = new DOMParser()
+	static custom = true
 
 	#bound
-	#booleanAttributes
+	#bindings
 
-	constructor(){
+	constructor(props){
 		super()
 
 		this.#bound = false
+		this.#bindings = []
+		this.parent = this.findParent()
+		this.binder = new Binder(this)
 
+		this.#addProperties(props)
+		this.#createShadow()
+		this.binder.bind()
+
+		this.#bound = true
+
+		/*
 		this.#booleanAttributes = {}
-
-		this.addProperty('application')
-		this.addProperty('parent')
 		this.addProperty('shown', null, this.onShownChanged)
 
 		/* Drag and Drop */
+		/*
 		this.addProperty('dragdata')
 		this.addProperty('dragdatatype')
 		//this.addProperty('dropTarget', false, null, Boolean)
@@ -32,58 +39,46 @@ export class Widget extends Widgy{
 		this.addAttribute('id')
 		this.addAttribute('hidden')
 		this.addAttribute('class', 'className', '')
+		*/
 	}
 
-	get elementName(){
-		return this.constructor.elementName
+	findParent() {
+		let parentNode = this.parentNode
+		
+		while(!parentNode.host && parentNode.parentNode){
+			parentNode = parentNode.parentNode
+		}
+
+		return parentNode.host || window.application
 	}
 
-	get safeElementName(){
-		return this.constructor.safeElementName
+	#createShadow(){
+		const template = document.getElementById('widgy-template-'+this.localName)
+
+		if(template){
+			this.attachShadow({ mode: "open" });
+			this.shadowRoot.appendChild(template.content.cloneNode(true));
+		}
 	}
 
-	get bound(){
-		return this.#bound
+	#addProperties(props){
+		for(let prop of props){
+			let name = prop[0]
+
+			if(name !== name.toLowerCase())
+				console.warn(`Widget properties should be all lowercase - ${this.constructor.name}.${name} is not`)
+
+			addProperty.apply(null, [this, ...prop])
+		}
+	}
+
+	attributeChangedCallback(){
+		console.log(arguments)
 	}
 
 	onShownChanged(){
 		if(this.shown !== null)
 			this.hidden = !this.shown
-	}
-
-	addProperty(name, initialValue, onChange, coerceType){
-		if(name !== name.toLowerCase())
-			console.warn(`Widget properties should be all lowercase - ${this.constructor.name}.${name} is not`)
-
-		super.addProperty(name, initialValue, onChange, coerceType)
-	}
-
-	addAttribute(name, propName, defaultValue){
-		function changed(){
-			if(this.root)
-				this.root[propName] = this[name]
-		}
-
-		propName = propName || name
-
-		this.addProperty(name, defaultValue)
-		this[name+'Property'].addEventListener(
-			'setvalue',
-			changed.bind(this))
-	}
-
-	booleanAttributeChanged(event){
-		let attr = event.name
-		let element = this.firstElement(this.#booleanAttributes[attr])
-
-		if(element){
-			if(this[attr]){
-				element.setAttribute(attr, "")
-			}
-			else{
-				element.removeAttribute(attr)
-			}
-		}
 	}
 
 	onDrop(event, data, type){
@@ -117,75 +112,10 @@ export class Widget extends Widgy{
 	}
 
 	addBooleanAttribute(name, selector, initialValue){
+		/*
 		this.addProperty(name, initialValue, this.booleanAttributeChanged)
 		this.#booleanAttributes[name] = selector
-	}
-
-	async getWidget(name){
-		let widget = await super.getWidget(name)
-
-		widget.application = this.application
-
-		return widget
-	}
-
-	bindProperty(context, property, value){
-		let resolvedValue = this.resolveCompositeValue(context, this, property, value)
-
-		if(!(resolvedValue instanceof BindingExpression)){
-			this[property].value = resolvedValue
-		}
-	}
-
-	bindBooleanAttributes(){
-		for(let attr in this.#booleanAttributes){
-			if(this[attr]){
-				this.firstElement(this.#booleanAttributes[attr]).setAttribute(attr, "")
-			}
-			else{
-				this.firstElement(this.#booleanAttributes[attr]).removeAttribute(attr)
-			}
-		}
-	}
-
-	createRoot(){
-		let elementName = this.safeElementName
-
-		return document.createElement(elementName)
-	}
-
-	async bind(context, root){
-		this.root = this.createRoot()
-		this.root.widget = this
-
-		this.addGlobalProperties(context, this)
-
-		for(let attr of root.attributes){
-			if(this.hasEventSlot(attr.name)){
-				this.bindEvent(attr.name, context, attr.value)
-			}
-			else if(isListenable(this[attr.name])){
-				this.bindProperty(context, attr.name, attr.value)
-			}
-			else if(isListenable(this[attr.name+'Property'])){
-				this.bindProperty(context, attr.name+'Property', attr.value)
-			}
-			else{
-				console.error(`${this.constructor.name} as no property or event ${attr.name}`)
-			}
-		}
-
-		if(!this.constructor.template)
-			await this.sleep(() => this.constructor.template)
-		this.root.appendChild(this.constructor.template.cloneNode(true))
-
-		this.bindAttributesSlots()
-
-		await this.populate(context)
-
-		this.bindBooleanAttributes()
-
-		this.#bound = true
+		*/
 	}
 
 	isVisible(){

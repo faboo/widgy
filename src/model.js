@@ -137,7 +137,7 @@ export class ArrayChangeEvent extends Event{
 	#array
 
 	constructor(array){
-		super('setvalue', {bubbles: true})
+		super('setvalue', {bubbles: false})
 
 		this.#array = array
 	}

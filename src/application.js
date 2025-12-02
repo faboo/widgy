@@ -1,14 +1,13 @@
-import {LiveValue} from './events.js'
-import {Widgy, BASE} from './base.js'
+import {LiveObject} from './model.js'
+import {BASE, Binder} from './base.js'
 import {Database} from './storage.js'
 
-export class Application extends Widgy{
+export class Application extends LiveObject{
 	static currentApplication
 	
 	#head
 	#title
 	#body
-	#dialogGutter
 	#databases
 	#paths
 	#dragData
@@ -23,11 +22,19 @@ export class Application extends Widgy{
 			, type: null
 			, rawData: null
 			}
+		this.binder = new Binder(this)
 
 		this.addProperty('title', '', this.onTitleChange.bind(this))
 	}
 
 	async init(){
+		let css = document.createElement('link')
+
+		css.rel = 'stylesheet'
+		css.href = BASE + '/widgy.css'
+
+		document.head.appendChild(css)
+		this.binder.bind()
 	}
 
 	loadInitialPath(){
@@ -87,35 +94,6 @@ export class Application extends Widgy{
 		return widget
 	}
 
-	async bind(context, root){
-		let css = document.createElement('link')
-
-		css.rel = 'stylesheet'
-		css.href = BASE + '/widgy.css'
-
-		this.root = root
-
-		this.#head = this.root.querySelector('head')
-		this.#body = this.root.querySelector('body')
-		this.#title = document.createElement('title')
-
-		let existingTitle = this.#head.querySelector('title')
-
-		this.#head.appendChild(css)
-
-		if(existingTitle)
-			this.#head.replaceChild(this.#title, existingTitle)
-		else
-			this.#head.appendChild(this.#title)
-
-        this.#title.textContent = this.title
-
-		await this.populate(context, this.#body)
-
-		this.#dialogGutter = document.createElement('widgy-dialog-gutter')
-		this.root.appendChild(this.#dialogGutter)
-	}
-
 	setDragData(data, type){
 		this.#dragData.nativeData = data
 		this.#dragData.type = type
@@ -171,7 +149,7 @@ export class Application extends Widgy{
 
 		await dialogWidget.bind(context, dialogElement)
 
-		this.#dialogGutter.appendChild(dialogElement)
+		//this.#dialogGutter.appendChild(dialogElement)
 
 		return dialogWidget
 	}

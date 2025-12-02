@@ -6,7 +6,7 @@ export {Model, LiveObject, LiveArray} from './model.js'
 export {View, ArrayView} from './view.js'
 export {RemoteStore, Dropbox, DatabaseEvent} from './storage.js'
 
-import {Widgy} from './base.js'
+import {Widgy, loadWidgets} from './base.js'
 import {Application} from './application.js'
 
 export async function preloadWidget(name, custom){
@@ -14,6 +14,23 @@ export async function preloadWidget(name, custom){
 }
 
 export async function start(appClass, customWidgetBase){
+	if(customWidgetBase)
+		Widgy.customWidgetBase = customWidgetBase
+
+	if(appClass == undefined)
+		appClass = Application
+
+	window.application = new appClass()
+
+	await loadWidgets(document.body)
+
+	await window.application.init()
+	window.application.loadInitialPath()
+
+	return window.application
+}
+
+export async function _start(appClass, customWidgetBase){
 	let html = document.firstElementChild
 	let application
 
@@ -27,8 +44,7 @@ export async function start(appClass, customWidgetBase){
 
 	Application.currentApplication = application
 	window.currentApplication = application
-
-	await application.bind(application, html)
+	window.application = application
 
 	await application.init()
 

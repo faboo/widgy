@@ -639,6 +639,8 @@ export class LiveTextValue extends EventTarget {
 		else
 			listener.handleEvent(event)
 	}
+
+	// TODO: destroy() ?
 }
 
 

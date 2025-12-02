@@ -4,20 +4,13 @@ export default class TextInput extends Widget{
 	#input
 
 	constructor(){
-		super()
+		super(
+			[ ['text', '']
+			, ['placeholder', '']
+			, ['completer']
+			])
 
-		this.addAttributeSlot('value', 'input', '', 'input')
-		this.addAttributeSlot('placeholder', 'input', '', 'input')
-
-		this.addProperty('text', '')
-		this.addProperty('placeholder', '')
-		this.addProperty('completer')
-	}
-
-	async bind(context, root){
-		await super.bind(context, root)
-
-		let input = this.firstElement('input')
+		let input = this.shadowRoot.querySelector('input')
 
 		input.addEventListener('keyup', this.completeText.bind(this))
 	}
@@ -48,5 +41,4 @@ export default class TextInput extends Widget{
 		}
 	}
 }
-
 

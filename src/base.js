@@ -4,7 +4,7 @@ import {isListenable, ValueChangeEvent, LiveValue, LiveTextValue, LiveText, Live
 import {LiveObject} from './model.js'
 
 const NO_RECURSE_TAG =
-	[ 'style', 'script'
+	[ 'style', 'script', 'template'
 	].reduce((table, elm) => table[elm] = null || table, { })
 
 const ATTRIBUTE_SUBSTITUTION =
@@ -246,7 +246,18 @@ export class Binder {
 				
 			}
 			else if(hasLiveText(attr.value)){
+				this.addObserver(elm)
+				addProperty(elm, attr.name, attr.value)
+
 				value = new LiveTextValue(attr.value, context)
+
+				if(isListenable(elm[name]))
+					elm[name].value = value
+				else
+					elm[name] = value
+			}
+			else{
+				elm[attr.name] = attr.value
 			}
 		}
 	}

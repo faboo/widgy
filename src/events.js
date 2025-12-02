@@ -19,7 +19,7 @@ export class ValueChangeEvent extends Event{
 	#oldValue
 
 	constructor(value, oldValue){
-		super('setvalue', {bubbles: true})
+		super('setvalue', {bubbles: false})
 		this.#value = value
 		this.#name = value.name
 		this.#object = value.object

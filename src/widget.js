@@ -94,7 +94,7 @@ export class Widget extends HTMLElement{
 	}
 
 	rawDragover(event){
-		if(!this.dropdatatype || window.currentApplication.getDragDataType() == this.dropdatatype){
+		if(!this.dropdatatype || window.application.getDragDataType() == this.dropdatatype){
 			//event.dataTransfer.dropEffect = 'move'
 			event.preventDefault()
 		}

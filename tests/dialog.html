@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="module">
+		import * as widgy from './widgy/widgy.js'
+
+		class App extends widgy.Application {
+			constructor(){
+				super()
+			}
+
+			onOpen(event){
+				this.binder.openDialog('dialog')
+			}
+
+			onClose(event){
+				console.log(event)
+				this.binder.closeDialog('dialog')
+			}
+		}
+
+		widgy.start(App)
+	</script>
+</head>
+<body>
+	<div>
+		<h1>Dialog</h1>
+
+		<button onclick="onOpen">Open Dialog</button>
+	</div>
+
+	<dialog id="dialog">
+		<h1>Hi!</h1>
+
+		<button onclick="onClose">Close</button>
+	</dialog>
+</body>
+</html>
+

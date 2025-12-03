@@ -3,11 +3,7 @@ import {BASE, Binder} from './base.js'
 import {Database} from './storage.js'
 
 export class Application extends LiveObject{
-	static currentApplication
-	
-	#head
 	#title
-	#body
 	#databases
 	#paths
 	#dragData
@@ -134,7 +130,7 @@ export class Application extends LiveObject{
 		return name in this.#databases
 	}
 
-	async openDialog(dialogClass, bindings, context){
+	async _openDialog(dialogClass, bindings, context){
 		let dialogElement = document.createElement(dialogClass.safeElementName)
 		let dialogWidget = new dialogClass()
 

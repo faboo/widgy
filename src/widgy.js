@@ -30,25 +30,3 @@ export async function start(appClass, customWidgetBase){
 	return window.application
 }
 
-export async function _start(appClass, customWidgetBase){
-	let html = document.firstElementChild
-	let application
-
-	if(customWidgetBase)
-		Widgy.customWidgetBase = customWidgetBase
-
-	if(appClass == undefined)
-		appClass = Application
-
-	application = new appClass()
-
-	Application.currentApplication = application
-	window.currentApplication = application
-	window.application = application
-
-	await application.init()
-
-	application.loadInitialPath()
-
-	return application
-}

@@ -78,25 +78,23 @@ async function loadWidget(tagName){
 
 
 export async function loadWidgets(parent){
-	//TODO: use a tree walker?
-	// Document.createTreeWalker(parent, NodeFilter.SHOW_ELEMENT, el => el.tagName.includes('-')? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP)
-	for(let child of parent.children){
-		if(child.tagName.includes('-')){
-			try{
-				await loadWidget(child.localName)
-			}
-			catch(ex){
-				console.exception(ex)
-			}
+	let tree = document.createTreeWalker(
+		parent,
+		NodeFilter.SHOW_ELEMENT,
+		el => el.tagName.includes('-')? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP)
+
+	while(tree.nextNode()){
+		try{
+			await loadWidget(tree.currentNode.localName)
 		}
-		else{
-			await loadWidgets(child)
+		catch(ex){
+			console.exception(ex)
 		}
 	}
 }
 
 
-export function hasLiveText(text){
+function hasLiveText(text){
 	let live = false
 	let escaped = false
 	
@@ -183,10 +181,12 @@ export function addCompositeProperty(object, name, watchProperties, evaluateCall
 
 export class Binder {
 	#bindings
+	#dialogs
 
 	constructor(container){
 		this.container = container
 		this.#bindings = []
+		this.#dialogs = {}
 	}
 
 	get root() {
@@ -302,22 +302,34 @@ export class Binder {
 			if(tree.currentNode.nodeType == document.ELEMENT_NODE){
 				console.log(tree.currentNode)
 				this.bindAttributes(this.container, tree.currentNode)
+
+				if(tree.currentNode instanceof HTMLDialogElement && tree.currentNode.id){
+					this.#dialogs[tree.currentNode.id] = tree.currentNode
+				}
 			}
 			// TEXT_NODE
 			else if(hasLiveText(tree.currentNode.textContent)){
-				console.log(tree.currentNode)
 				new LiveText(tree.currentNode, this.container)
 			}
 		}
 	}
 
+
 	unbind(){
 		for(let binding of this.#bindings)
 			binding.destroy()
 	}
-}
 
-export const LoadedWidget = { }
+
+	openDialog(dialogId){
+		this.#dialogs[dialogId].showModal()
+	}
+
+
+	closeDialog(dialogId){
+		this.#dialogs[dialogId].close()
+	}
+}
 
 export class Widgy{
 	static customWidgetBase = BASE.replace(/\/[^/]+$/, '')
@@ -335,50 +347,6 @@ export class Widgy{
 			}
 			setTimeout(finished, msdelay)
 		})
-	}
-
-	firstElement(selector){
-		let root = this.root.shadowRoot || this.root
-
-		if(selector)
-			return root.querySelector(selector)
-		else
-			return root
-	}
-
-	findContainerElement(child, boolProp){
-		let lookback = 10
-		let container = null
-		let element = child
-
-		while(element && lookback && !container){
-			if(element[boolProp] || (element.widget && element.widget[boolProp]))
-				container = element
-
-			lookback -= 1
-			element = element.parentElement
-		}
-
-		return container || child
-	}
-
-	resolveCompositeValue(context, target, name, value){
-		let resolvedValue = value
-
-		if(value){
-			if(value.startsWith('@')){
-				resolvedValue = this.createBindingExpression(
-					value.slice(1),
-					context,
-					target,
-					name)
-			}
-			else if(context.hasLiveText(value)){
-				resolvedValue = new LiveTextValue(value, context)
-			}
-		}
-
-		return resolvedValue
 	}
 
 	bindDragAndDrop(child){
@@ -409,7 +377,7 @@ export class Widgy{
 		if(targetWidget){
 			// TODO: conversion for dragging in/out of the browser?
 			//event.dataTransfer.setData(targetWidget.dragdatatype || '', targetWidget.dragdata)
-			window.currentApplication.setDragData(
+			window.application.setDragData(
 				targetWidget.dragdata,
 				targetWidget.dragdatatype || '')
 		}

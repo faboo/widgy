@@ -45,7 +45,7 @@ export function setCustomWidgetBase(urlBase){
 }
 
 
-async function loadWidgetClass(urlBase){
+export async function loadWidgetClass(urlBase){
 	let module = await import(urlBase+'.js')
 	
 	return module.default
@@ -223,6 +223,28 @@ function bindDragAndDrop(element){
 			element.addEventListener('dragleave', event => element.rawDragleave(event))
 			element.addEventListener('drop', event => element.rawDragleave(event))
 		}
+	}
+}
+
+
+export function addCompositeProperty(object, name, watchProperties, evaluateCallback, onChange){
+	let nameProperty = name+'Property'
+	Object.defineProperties(
+		object,
+		{ [name]:
+			{ get: () => object[nameProperty].value
+			, set: (value) => object[nameProperty].value
+			, enumerable: true
+			}
+		, [nameProperty]:
+			{ value: new CompositeValue(name, object, watchProperties, evaluateCallback)
+			, writable: false
+			, enumerable: false
+			}
+		})
+
+	if(onChange){
+		object[nameProperty].addEventListener('setvalue', onChange.bind(object))
 	}
 }
 

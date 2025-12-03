@@ -7,7 +7,6 @@
 		class App extends widgy.Application {
 			constructor(){
 				super()
-				this.animal = 'frog'
 				this.addProperty('insect', 'cricket')
 			}
 		}
@@ -17,16 +16,12 @@
 </head>
 <body>
 	<div>
-		<h1>A text input</h1>
+		<h1>Textarea</h1>
 
-		<text-input text="@=insect"></text-input>
+		<textarea value="@=insect"></textarea>
 
-		<div>The animal is: {animal}</div>
 		<div>The insect is: {insect}</div>
-
-		<text-input placeholder="This text isn't saved"></text-input>
 	</div>
 </body>
 </html>
-
 

@@ -1,6 +1,7 @@
 import {LiveValue, CompositeValue, isListenable} from './events.js'
 
 export class LiveObject{
+	// TODO: use the base.js version (but pull them up
 	addProperty(name, initialValue, onChange, coerceType){
 		let nameProperty = name+'Property'
 		Object.defineProperties(

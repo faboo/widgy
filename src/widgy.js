@@ -6,11 +6,11 @@ export {Model, LiveObject, LiveArray} from './model.js'
 export {View, ArrayView} from './view.js'
 export {RemoteStore, Dropbox, DatabaseEvent} from './storage.js'
 
-import {Widgy, loadWidgets} from './base.js'
+import {Widgy, loadWidgets, loadWidgetClass} from './base.js'
 import {Application} from './application.js'
 
-export async function preloadWidget(name, custom){
-	await Widgy.getWidgetClass(name, custom)
+export function preloadWidget(name){
+	loadWidgetClass(Widgy.customWidgetBase+name)
 }
 
 export async function start(appClass, customWidgetBase){

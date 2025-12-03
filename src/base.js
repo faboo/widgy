@@ -22,7 +22,7 @@ const GLOBAL_PROPERTIES =
 	]
 
 const CHANGE_EVENT =
-	{ input: {value: 'input'}
+	{ input: {value: 'input', checked: 'input'}
 	, textarea: {value: 'input'}
 	}
 
@@ -39,7 +39,7 @@ const WIDGY_WIDGETS =
 const domParser = new DOMParser()
 
 
-async function loadWidgetClass(urlBase){
+export async function loadWidgetClass(urlBase){
 	let module = await import(urlBase+'.js')
 	
 	return module.default
@@ -159,6 +159,28 @@ export function addProperty(object, name, initialValue, onChange, coerceType){
 }
 
 
+export function addCompositeProperty(object, name, watchProperties, evaluateCallback, onChange){
+	let nameProperty = name+'Property'
+	Object.defineProperties(
+		object,
+		{ [name]:
+			{ get: () => object[nameProperty].value
+			, set: (value) => object[nameProperty].value
+			, enumerable: true
+			}
+		, [nameProperty]:
+			{ value: new CompositeValue(name, object, watchProperties, evaluateCallback)
+			, writable: false
+			, enumerable: false
+			}
+		})
+
+	if(onChange){
+		object[nameProperty].addEventListener('setvalue', onChange.bind(object))
+	}
+}
+
+
 export class Binder {
 	#bindings
 
@@ -225,29 +247,31 @@ export class Binder {
 
 	bindAttributes(context, elm){
 		for(let attr of elm.attributes){
+			let name = attr.name in ATTRIBUTE_SUBSTITUTION? ATTRIBUTE_SUBSTITUTION[attr.name] : attr.name
 			let value
 
 			if(attr.name.startsWith('on')){
 				elm.addEventListener(
 					attr.name.slice(2),
 					this.getCallbackValue(context, attr.value))
+				attr.value = ''
 			}
 			else if(attr.value.startsWith('@')){
 				this.addObserver(elm)
-				addProperty(elm, attr.name, attr.value)
+				addProperty(elm, name, attr.value)
 
 				value = new BindingExpression(
 					attr.value.slice(1),
 					context,
 					elm,
-					attr.name)
+					name)
 				attr.bindingExpression = value
 				this.#bindings.push(value)
 				
 			}
 			else if(hasLiveText(attr.value)){
 				this.addObserver(elm)
-				addProperty(elm, attr.name, attr.value)
+				addProperty(elm, name, attr.value)
 
 				value = new LiveTextValue(attr.value, context)
 
@@ -257,7 +281,7 @@ export class Binder {
 					elm[name] = value
 			}
 			else{
-				elm[attr.name] = attr.value
+				elm[name] = attr.value
 			}
 		}
 	}

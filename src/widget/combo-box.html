@@ -1,7 +1,7 @@
 <template>
 	<style>
-		{
-			display: inline-block;
+		* {
+			box-sizing: border-box;
 		}
 
 		div.combo-container{
@@ -28,8 +28,12 @@
 		}
 	</style>
 
+	<template id="default">
+		<option>{item}</option>
+	</template>
+
 	<div class="combo-container">
-		<div class="edit-container" hidden="@hideInput">
+		<div class="edit-container" hidden="@hideinput">
 			<input type="text" value="@=selected"></input>
 		</div>
 		<select name="@name" autocomplete="@autocomplete" value="@=selected">

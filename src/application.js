@@ -2,6 +2,8 @@ import {LiveObject} from './model.js'
 import {BASE, Binder} from './base.js'
 import {Database} from './storage.js'
 
+const CSS_URL= BASE + '/widgy.css'
+
 export class Application extends LiveObject{
 	#title
 	#databases
@@ -24,10 +26,11 @@ export class Application extends LiveObject{
 	}
 
 	async init(){
+		if(document.head.querySelector(`link[href='${CSS_URL}']`)) return
 		let css = document.createElement('link')
 
 		css.rel = 'stylesheet'
-		css.href = BASE + '/widgy.css'
+		css.href = CSS_URL
 
 		document.head.appendChild(css)
 		this.binder.bind()

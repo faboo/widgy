@@ -7,21 +7,19 @@ export class Widget extends HTMLElement{
 	static custom = true
 
 	#bound
-	#bindings
 
-	constructor(props){
+	constructor(props, dontBind){
 		super()
 
 		this.#bound = false
-		this.#bindings = []
 		this.parent = this.findParent()
 		this.binder = new Binder(this)
 
 		this.#addProperties(props)
 		this.#createShadow()
-		this.binder.bind()
 
-		this.#bound = true
+		if(!dontBind)
+			this.bind()
 
 		/*
 		this.#booleanAttributes = {}
@@ -68,8 +66,15 @@ export class Widget extends HTMLElement{
 			if(name !== name.toLowerCase())
 				console.warn(`Widget properties should be all lowercase - ${this.constructor.name}.${name} is not`)
 
+			if(prop[2])
+				prop[2] = prop[2].bind(this)
 			addProperty.apply(null, [this, ...prop])
 		}
+	}
+
+	bind(){
+		this.binder.bind()
+		this.#bound = true
 	}
 
 	attributeChangedCallback(){
@@ -121,6 +126,7 @@ export class Widget extends HTMLElement{
 	isVisible(){
 		let hasSize = this.root.offsetWidth || this.root.offsetHeight || this.root.getClientRects().length
 
-    	return !!hasSize
+		return !!hasSize
 	}
 }
+export default Widget

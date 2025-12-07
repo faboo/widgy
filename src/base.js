@@ -1,7 +1,6 @@
 export const BASE = import.meta.url.replace(/\/[^\/]*\.js/, '')
 
 import {isListenable, ValueChangeEvent, LiveValue, LiveTextValue, LiveText, LiveAttribute, EventSlot, BindingExpression} from './events.js'
-import {LiveObject} from './model.js'
 
 const NO_RECURSE_TAG =
 	[ 'style', 'script', 'template'
@@ -24,10 +23,12 @@ const GLOBAL_PROPERTIES =
 const CHANGE_EVENT =
 	{ input: {value: 'input', checked: 'input'}
 	, textarea: {value: 'input'}
+	, select: {value: 'change'}
 	}
 
 const WIDGY_WIDGETS = 
 	[ 'check-box'
+	, 'combo-box'
 	, 'data-table'
 	, 'html-view'
 	, 'items-view'
@@ -88,6 +89,7 @@ export async function loadWidgets(parent){
 			await loadWidget(tree.currentNode.localName)
 		}
 		catch(ex){
+			console.error('Error loading widget:')
 			console.exception(ex)
 		}
 	}
@@ -181,20 +183,29 @@ export function addCompositeProperty(object, name, watchProperties, evaluateCall
 
 export class Binder {
 	#bindings
+	#boolAttributes
 	#dialogs
 
 	constructor(container){
-		this.container = container
+		this.#boolAttributes = []
 		this.#bindings = []
 		this.#dialogs = {}
+		this.container = container
 	}
+
 
 	get root() {
 		return this.container.shadowRoot || document
 	}
 
+
 	get parent() {
 		return this.container.parent
+	}
+
+
+	addBooleanAttribute(name){
+		this.#boolAttributes.push(name)
 	}
 
 
@@ -204,7 +215,7 @@ export class Binder {
 		elm.observer = new MutationObserver(mutations => {
 			for(let mutation of mutations){
 				let property = elm[mutation.attributeName+'Property']
-				let value = elm.attributes[mutation.attributeName].value
+				let value = elm[mutation.attributeName] // TODO?
 				if(property && property.value !== value){
 					property._overrideValue(value)
 					property.dispatchEvent(new ValueChangeEvent(property, mutation.oldValue))
@@ -267,7 +278,6 @@ export class Binder {
 					name)
 				attr.bindingExpression = value
 				this.#bindings.push(value)
-				
 			}
 			else if(hasLiveText(attr.value)){
 				this.addObserver(elm)
@@ -287,20 +297,55 @@ export class Binder {
 	}
 
 
-	bind(){
-		let tree = document.createTreeWalker(
-			this.root,
+	createTreeWalker(root){
+		return document.createTreeWalker(
+			root,
 			NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
 			el => el.shadowRoot || el.localName in NO_RECURSE_TAG
 				? NodeFilter.FILTER_REJECT
 				: NodeFilter.FILTER_ACCEPT)
+	}
+
+
+	bindElement(parent, context, element, root){
+		let tree = this.createTreeWalker(root)
+
+		if(parent)
+			this.bindAttributes(parent, element)
+
+		while(tree.nextNode()){
+			if(tree.currentNode.nodeType == document.ELEMENT_NODE){
+				this.bindAttributes(context, tree.currentNode)
+
+				if(tree.currentNode instanceof HTMLDialogElement && tree.currentNode.id){
+					this.#dialogs[tree.currentNode.id] = tree.currentNode
+				}
+			}
+			// TEXT_NODE
+			else if(hasLiveText(tree.currentNode.textContent)){
+				new LiveText(tree.currentNode, context)
+			}
+		}
+	}
+
+
+	bindItem(context, element){
+		this.bindElement(context, context, element, element)
+	}
+
+
+	bind(){
+		this.bindElement(this.parent, this.container, this.container, this.root)
+	}
+	/*
+	bind(){
+		let treeWalker = this.createTreeWalker(this.root)
 
 		if(this.parent)
 			this.bindAttributes(this.parent, this.container)
 
 		while(tree.nextNode()){
 			if(tree.currentNode.nodeType == document.ELEMENT_NODE){
-				console.log(tree.currentNode)
 				this.bindAttributes(this.container, tree.currentNode)
 
 				if(tree.currentNode instanceof HTMLDialogElement && tree.currentNode.id){
@@ -313,6 +358,7 @@ export class Binder {
 			}
 		}
 	}
+	*/
 
 
 	unbind(){

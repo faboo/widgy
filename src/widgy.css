@@ -20,6 +20,14 @@
 		font-size: 1rem;
 	}
 
+	combo-box {
+		display: inline-block;
+
+		* {
+			display: none;
+		}
+	}
+
 	widgy-dialog-gutter > * {
 		position: fixed;
 		z-index: 10000;

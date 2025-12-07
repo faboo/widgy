@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="module">
+		import * as widgy from './widgy/widgy.js'
+
+		class App extends widgy.Application {
+			constructor(){
+				super()
+				this.addProperty('hardcoded')
+				this.addProperty('dynamic')
+				this.addProperty('editable')
+				this.addProperty('options', ["Orange", "Apple", "Lemon"])
+			}
+		}
+
+		widgy.start(App)
+	</script>
+</head>
+<body>
+	<div>
+		<h1>Combo Box</h1>
+
+		<h2>Hard-coded options</h2>
+		<combo-box selected="@=hardcoded">
+			<option>Option 1</option>
+			<option>Option 2</option>
+			<option>Option 3</option>
+		</combo-box>
+
+		<p>Selected: {hardcoded}</p>
+
+		<h2>Dynamic options</h2>
+		<combo-box selected="@=dynamic" items="@options">
+			<template>
+				<option>{index}: {item}</option>
+			</template>
+		</combo-box>
+
+		<p>Selected: {dynamic}</p>
+
+		<h2>Editable options</h2>
+		<combo-box selected="@=editable" items="@options" editable="true">
+		</combo-box>
+
+		<p>Selected: {editable}</p>
+
+	</div>
+</body>
+</html>
+
+

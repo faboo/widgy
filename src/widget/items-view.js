@@ -3,7 +3,6 @@ import {LiveObject} from '../model.js'
 import {Widget} from '../widget.js'
 
 export default class ItemsView extends Widget{
-	ContainerElement = 'div'
 	#onItemsContentChanged
 	#template
 	#context
@@ -17,12 +16,16 @@ export default class ItemsView extends Widget{
 
 		this.template = this.querySelector('template') 
 			|| this.shadowRoot.querySelector('template#default')
-		this.container = this.shadowRoot.querySelector(this.ContainerElement)
+		this.container = this.shadowRoot.querySelector(this.containerTagName)
 
 		this.#onItemsContentChanged = this.onItemsContentChanged.bind(this)
 
 		if(!dontBind)
 			this.bind()
+	}
+
+	get containerTagName(){
+		return 'div'
 	}
 
 	createItemElement(index, item){

@@ -7,13 +7,6 @@ export default class CheckBox extends Widget{
 		super(
 			[ ['checked', false]
 			])
-
-		//this.addAttributeSlot('checked', 'input', false, 'input')
-		//this.addBooleanAttribute('checked', 'input', false)
-	}
-
-	onCheckboxClicked(event){
-		//this.#clicked.trigger({checked: this.checked})
 	}
 }
 

@@ -89,8 +89,9 @@ export async function loadWidgets(parent){
 			await loadWidget(tree.currentNode.localName)
 		}
 		catch(ex){
-			console.error('Error loading widget:')
-			console.exception(ex)
+			console.error('Error loading widget: '+tree.currentNode.localName)
+			console.exception(
+				ex.message+'\n'+ex.fileName+':'+ex.lineNumber+':'+ex.columnNumber)
 		}
 	}
 }
@@ -182,7 +183,7 @@ export function addCompositeProperty(object, name, watchProperties, evaluateCall
 
 
 export class Binder {
-	#bindings
+	#bindings //TODO: This is a problem. Detached child elements can leak bindings
 	#boolAttributes
 	#dialogs
 

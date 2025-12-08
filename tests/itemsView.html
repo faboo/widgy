@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="module">
+		import * as widgy from './widgy/widgy.js'
+
+		class App extends widgy.Application {
+			constructor(){
+				super()
+				this.addProperty('items', new widgy.LiveArray(["Orange", "Apple", "Lemon"]))
+			}
+
+			addItem(){
+				this.items.push('Item '+this.items.length)
+			}
+		}
+
+		widgy.start(App)
+	</script>
+</head>
+<body>
+	<div>
+		<h1>Items View</h1>
+
+		<h2>Hardcoded items</h2>
+		<items-view>
+			<h3>Thing 1</h3>
+			<h3>Thing 2</h3>
+			<h3>Thing 3</h3>
+		</items-view>
+
+		<h2>Default template</h2>
+		<items-view items="@items"></items-view>
+
+		<h2>Custom template</h2>
+		<items-view items="@items">
+			<template>
+				<h3>{index}. {item}</h3>
+			</template>
+		</items-view>
+
+		<button onclick="addItem">Add Item</button>
+	</div>
+</body>
+</html>
+
+

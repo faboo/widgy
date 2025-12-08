@@ -3,7 +3,6 @@ import {LiveObject} from '../model.js'
 
 export default class ComboBox extends Widget{
 	ContainerElement = 'select'
-	#select
 
 	constructor(){
 		super(
@@ -43,24 +42,25 @@ export default class ComboBox extends Widget{
 		//this.addEventSlot('onSelect')
 	}
 
-	get content(){
-		return this.#select
+	createItemElement(index, item){
+		let context = LiveObject.create(
+			{ item
+			, index
+			, parent: this.parent
+			})
+		let element = this.template.content.cloneNode(true)
+
+		for(let elm of element.children)
+			this.binder.bindItem(context, elm)
+
+		return element
 	}
 
 	onItemsChanged(){
 		this.container.innerHTML = ''
 
 		for(let index in this.items){
-			let context =
-				{ item: this.items[index]
-				, index
-				, parent: this.parent
-				}
-			let element = this.template.content.cloneNode(true)
-
-			for(let elm of element.children)
-				this.binder.bindItem(context, elm)
-			this.container.append(element)
+			this.container.append(this.createItemElement(index, this.items[index]))
 		}
 	}
 
@@ -75,8 +75,7 @@ export default class ComboBox extends Widget{
 
 	onItemSelected(){
 		if(this.items && this.items.length)
-			this.selecteditem = this.items[this.#select ? this.#select.selectedIndex : 0]
-
+			this.selecteditem = this.items[this.container ? this.container.selectedIndex : 0]
 	}
 
 	onEditableChanged(){

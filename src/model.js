@@ -131,6 +131,16 @@ export class LiveObject{
 
 		return newChars.join('')
 	}
+
+	static create(object){
+		let liveObject = new LiveObject()
+
+		for(let name in object){
+			liveObject.addProperty(name, object[name])
+		}
+
+		return liveObject
+	}
 }
 
 

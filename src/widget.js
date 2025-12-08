@@ -77,6 +77,10 @@ export class Widget extends HTMLElement{
 		this.#bound = true
 	}
 
+	get bound(){
+		return this.#bound
+	}
+
 	attributeChangedCallback(){
 		console.log(arguments)
 	}

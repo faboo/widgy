@@ -339,29 +339,6 @@ export class Binder {
 	bind(){
 		this.bindElement(this.parent, this.container, this.container, this.root)
 	}
-	/*
-	bind(){
-		let treeWalker = this.createTreeWalker(this.root)
-
-		if(this.parent)
-			this.bindAttributes(this.parent, this.container)
-
-		while(tree.nextNode()){
-			if(tree.currentNode.nodeType == document.ELEMENT_NODE){
-				this.bindAttributes(this.container, tree.currentNode)
-
-				if(tree.currentNode instanceof HTMLDialogElement && tree.currentNode.id){
-					this.#dialogs[tree.currentNode.id] = tree.currentNode
-				}
-			}
-			// TEXT_NODE
-			else if(hasLiveText(tree.currentNode.textContent)){
-				new LiveText(tree.currentNode, this.container)
-			}
-		}
-	}
-	*/
-
 
 	unbind(){
 		for(let binding of this.#bindings)

@@ -132,24 +132,4 @@ export class Application extends LiveObject{
 	databaseExists(name){
 		return name in this.#databases
 	}
-
-	async _openDialog(dialogClass, bindings, context){
-		let dialogElement = document.createElement(dialogClass.safeElementName)
-		let dialogWidget = new dialogClass()
-
-		// TODO: is instanceof Dialog ?
-		
-		dialogWidget.parent = this
-		dialogWidget.application = this
-
-		for(let attr in bindings){
-			dialogElement.setAttribute(attr, bindings[attr])
-		}
-
-		await dialogWidget.bind(context, dialogElement)
-
-		//this.#dialogGutter.appendChild(dialogElement)
-
-		return dialogWidget
-	}
 }

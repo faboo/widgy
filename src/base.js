@@ -32,7 +32,6 @@ const WIDGY_WIDGETS =
 	, 'data-table'
 	, 'html-view'
 	, 'items-view'
-	, 'number-input'
 	, 'number-view'
 	, 'text-input'
 	, 'select-widget'

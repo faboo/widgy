@@ -28,6 +28,11 @@
 		}
 	}
 
+	data-table {
+		display: block;
+		overflow-y: scroll;
+	}
+
 	widgy-dialog-gutter > * {
 		position: fixed;
 		z-index: 10000;

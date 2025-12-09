@@ -99,12 +99,12 @@
 			border-style: solid;
 			height: 10vh;
 		}
-		data-table th {
+		data-table::part(th) {
 			border-bottom-style: solid;
 			border-left-style: solid;
 			background: white;
 		}
-		data-table td {
+		data-table::part(td) {
 			border-bottom-style: dotted;
 			border-left-style: dotted;
 		}
@@ -200,10 +200,10 @@
 		<h2>Scrollable Table, With Row Recycling</h2>
 
 		<data-table items="@tableData">
-			<column heading="" width="5">{index}</column>
-			<column heading="ID" width="5">{item.id}</column>
-			<column heading="Name" width="*">{item.name}</column>
-			<column heading="Age" width="10">{item.age}</column>
+			<data-col heading="" width="5">{index}</data-col>
+			<data-col heading="ID" width="5">{item.id}</data-col>
+			<data-col heading="Name" width="*">{item.name}</data-col>
+			<data-col heading="Age" width="10">{item.age}</data-col>
 		</data-table>
 	</div>
 </body>

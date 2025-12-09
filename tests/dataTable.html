@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="module">
+		import * as widgy from './widgy/widgy.js'
+		import * as model from './widgy/model.js'
+
+		const TableData = model.createModel(['id', 'name', 'age'])
+
+		class App extends widgy.Application {
+			constructor(){
+				super()
+				this.addProperty('items',
+					new widgy.LiveArray(
+						[ new TableData({id: 101, name: 'Steve', age: 32})
+						, new TableData({id: 201, name: 'Thomas', age: 49})
+						, new TableData({id: 301, name: 'Elma', age: 37})
+						, new TableData({id: 401, name: 'Lori', age: 76})
+						, new TableData({id: 501, name: 'Shemp', age: 18})
+						, new TableData({id: 601, name: 'Andy', age: 23})
+						, new TableData({id: 701, name: 'Eleanore', age: 29})
+						, new TableData({id: 801, name: 'Xavier', age: 52})
+						, new TableData({id: 901, name: 'Garry', age: 45})
+						, new TableData({id: '001', name: 'Bobbi', age: 41})
+						]))
+			}
+		}
+
+		widgy.start(App)
+	</script>
+
+	<style>
+		data-table {
+			width: 50vw;
+			border-style: solid;
+			height: 10vh;
+		}
+		data-table::part(th) {
+			border-bottom-style: solid;
+			border-left-style: solid;
+			background: white;
+		}
+		data-table::part(td) {
+			border-bottom-style: dotted;
+			border-left-style: dotted;
+		}
+	</style>
+</head>
+<body>
+	<div>
+		<h1>Data Table</h1>
+
+		<data-table items="@items">
+			<data-col heading="" width="5">{index}</data-col>
+			<data-col heading="ID" width="5">{item.id}</data-col>
+			<data-col heading="Name" width="*">{item.name}</data-col>
+			<data-col heading="Age" width="10">{item.age}</data-col>
+		</data-table>
+	</div>
+</body>
+</html>

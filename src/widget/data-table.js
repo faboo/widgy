@@ -1,12 +1,8 @@
 import {LiveValue} from '../events.js'
 import {Widget} from '../widget.js'
-import {Widgy} from '../base.js'
+import {Model} from '../model.js'
 
 export default class DataTable extends Widget{
-	#onItemsChanged
-	#onItemsContentChanged
-	#adjustBoundItems
-	#resetSize
 	#template
 	#table
 	#rows
@@ -15,26 +11,33 @@ export default class DataTable extends Widget{
 	#resizing
 
 	constructor(){
-		super()
-
-		this.#scrolling = false
-		this.#resizing = false
-
-		this.#onItemsChanged = this.onItemsChanged.bind(this)
-		this.#onItemsContentChanged = this.onItemsContentChanged.bind(this)
-		this.#adjustBoundItems = this.adjustBoundItems.bind(this)
-		this.#resetSize = this.resetSize.bind(this)
-
-		this.addProperty('items', null, this.#onItemsChanged)
-		this.addProperty('offset', 0)
+		super(
+			[ ['items', null, DataTable.prototype.onItemsChanged]
+			, ['offset', 0]
+			])
 
 		this.rowHeight = null
 		this.headings = []
 		this.widths = []
+		this.#scrolling = false
+		this.#resizing = false
+		this.#template = this.getTemplate()
+		this.#table = this.shadowRoot.querySelector('table')
+		this.#rows = this.shadowRoot.querySelector('tbody')
+
+		this.onItemsContentChanged = this.onItemsContentChanged.bind(this)
+		this.adjustBoundItems = this.adjustBoundItems.bind(this)
+		this.resetSize = this.resetSize.bind(this)
+
+		this.shadowRoot.addEventListener('scroll', this.onScroll.bind(this))
+		window.addEventListener('resize', this.onResize.bind(this))
+
+		this.buildThead()
+		this.updateItems()
 	}
 
-	getTemplate(root){
-		let columns = root.querySelectorAll('column')
+	getTemplate(){
+		let columns = this.querySelectorAll('data-col')
 		let template = document.createElement('tr')
 		let fillCell = []
 		let fillIndex = []
@@ -48,6 +51,7 @@ export default class DataTable extends Widget{
 			let width = column.getAttribute('width') || '*'
 
 			cell.innerHTML = column.innerHTML
+			cell.setAttribute('part', 'td')
 			template.appendChild(cell)
 			this.headings.push(heading)
 			this.widths.push(width)
@@ -72,23 +76,10 @@ export default class DataTable extends Widget{
 		return template
 	}
 
-	async bind(context, root){
-		this.#context = context
-		this.#template = this.getTemplate(root)
-
-		await super.bind(context, root)
-
-		this.#table = this.root.children[0]
-
-		this.root.addEventListener('scroll', this.onScroll.bind(this))
-		window.addEventListener('resize', this.onResize.bind(this))
-
-		this.updateItems()
-	}
 
 	async measureRow(){
 		let item = this.items[0]
-		let row = await this.createRowElement()
+		let row = this.createRowElement()
 		let rect
 		
 		this.bindRowElement(row, item, 0)
@@ -102,23 +93,26 @@ export default class DataTable extends Widget{
 		this.rowHeight = rect.height
 	}
 
-	async createRowElement(){
+	createRowElement(index, item){
 		let row = this.#template.cloneNode(true)
-		let context = new Widgy()
-
-		context.addProperty('context', this.#context)
-		context.addProperty('item', null)
-		context.addProperty('index', null)
+		let context = Model.create(
+			{ item
+			, index
+			, parent: this.parent
+			})
 
 		row.widget = this
 		row.context = context
 
-		await this.populateChildren(context, row, null)
+		for(let elm of row.children)
+			this.binder.bindItem(context, row)
 
 		for(let index in this.widths){
 			let width = this.widths[index]
 			row.children[index].setAttribute('style', `width: ${width}%`)
 		}
+
+		row.setAttribute('style', `top: ${top}px`)
 
 		return row
 	}
@@ -134,25 +128,16 @@ export default class DataTable extends Widget{
 		row.setAttribute('style', `top: ${top}px`)
 	}
 
-	hasSpecialWidget(element){
-		let name = element.nodeName.toLowerCase()
-		return name == 'tbody' || name == 'thead'
-	}
-
-	getTbodyWidget(){
-		this.#rows = document.createElement('tbody')
-
-		return this.#rows
-	}
-
-	getTheadWidget(){
-		let head = document.createElement('thead')
+	buildThead(){
+		let head = this.shadowRoot.querySelector('thead')
 		let row = document.createElement('tr')
 
 		for(let index in this.headings){
 			let heading = this.headings[index]
 			let width = this.widths[index]
 			let cell = document.createElement('th')
+
+			cell.setAttribute('part', 'th')
 
 			if(heading)
 				cell.textContent = heading
@@ -164,23 +149,14 @@ export default class DataTable extends Widget{
 		}
 
 		head.appendChild(row)
-
-		return head
-	}
-
-	getSpecialWidget(element){
-		if(element.nodeName.toLowerCase() == 'tbody')
-			return this.getTbodyWidget()
-		else
-			return this.getTheadWidget()
 	}
 
 	async updateItems(){
 		let bodyHeight
-		let tableHeight = this.root.getBoundingClientRect().height
+		let tableHeight = this.getBoundingClientRect().height
 
 		this.#rows.innerHTML = ''
-		this.root.scrollTo(0, 0)
+		this.scrollTo(0, 0)
 
 		// Make sure we know how big a row is
 		if(this.items.length && this.rowHeight === null){
@@ -192,20 +168,20 @@ export default class DataTable extends Widget{
 		bodyHeight = this.rowHeight * this.items.length
 		this.#rows.setAttribute('style', `height: ${bodyHeight}px`)
 
-		await this.adjustBoundItems()
+		this.adjustBoundItems()
 	}
 
 	onScroll(event){
 		if(!this.#scrolling){
 			this.#scrolling = true
-			window.requestAnimationFrame(this.#adjustBoundItems)
+			window.requestAnimationFrame(this.adjustBoundItems)
 		}
 	}
 
 	onResize(event){
 		if(!this.#resizing){
 			this.#resizing = true
-			window.requestAnimationFrame(this.#resetSize)
+			window.requestAnimationFrame(this.resetSize)
 		}
 	}
 
@@ -238,18 +214,18 @@ export default class DataTable extends Widget{
 			this.#rows.appendChild(row)
 	}
 
-	async adjustBoundItems(){
-		let tableHeight = this.root.getBoundingClientRect().height
+	adjustBoundItems(){
+		let tableHeight = this.getBoundingClientRect().height
 		let priorFirstIndex = 0
-		let firstIndex = Math.max(0, Math.floor(this.root.scrollTop / this.rowHeight) - 2)
+		let firstIndex = Math.max(0, Math.floor(this.scrollTop / this.rowHeight) - 2)
 		let lastIndex = Math.min(
 			this.items.length - 1,
-			Math.floor((this.root.scrollTop + tableHeight) / this.rowHeight) + 2)
+			Math.floor((this.scrollTop + tableHeight) / this.rowHeight) + 2)
 		let freeRows = []
 		let assignedIndexes = {}
 
 		this.#scrolling = false
-		this.offset = this.root.scrollTop
+		this.offset = this.scrollTop
 
 		// Free up bindable rows that aren't visible
 		for(let row of this.#rows.children){
@@ -281,7 +257,7 @@ export default class DataTable extends Widget{
 			// Bind newly visible items.
 			for(let index = firstIndex, position = 0; index <= lastIndex; ++index, ++position){
 				if(!(index in assignedIndexes)){
-					let row = freeRows.length? freeRows.pop() : await this.createRowElement()
+					let row = freeRows.length? freeRows.pop() : this.createRowElement()
 
 					this.bindRowElement(row, this.items.at(index), index)
 
@@ -293,7 +269,7 @@ export default class DataTable extends Widget{
 
 	onItemsChanged(event){
 		if(event.oldValue)
-			event.oldValue.removeEventListener('setvalue', this.#onItemsContentChanged)
+			event.oldValue.removeEventListener('setvalue', this.onItemsContentChanged)
 
 		if(this.bound){
 			this.#rows.innerHTML = ''
@@ -301,7 +277,7 @@ export default class DataTable extends Widget{
 			this.updateItems()
 		}
 
-		this.items.addEventListener('setvalue', this.#onItemsContentChanged)
+		this.items.addEventListener('setvalue', this.onItemsContentChanged)
 	}
 
 	onItemsContentChanged(){

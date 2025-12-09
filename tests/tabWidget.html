@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="module">
+		import * as widgy from './widgy/widgy.js'
+
+		class App extends widgy.Application {
+			constructor(){
+				super()
+			}
+		}
+
+		widgy.start(App)
+	</script>
+</head>
+<body>
+	<div>
+		<h1>Tab Widget</h1>
+
+		<tab-widget>
+			<div key="left" title="Left Tab">
+				<p>The left widget</p>
+			</div>
+			<div key="right" title="Right Tab">
+				<p>The right widget</p>
+			</div>
+		</tab-widget>
+
+</body>
+</html>

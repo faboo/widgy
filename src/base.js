@@ -35,6 +35,8 @@ const WIDGY_WIDGETS =
 	, 'number-input'
 	, 'number-view'
 	, 'text-input'
+	, 'select-widget'
+	, 'tab-widget'
 	]
 
 const domParser = new DOMParser()

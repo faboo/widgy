@@ -1,14 +1,15 @@
 <template>
 	<style>
-		{
+		:root{
 			display: flex;
 			flex-direction: column;
 		}
 
-		buttons {
+		button-box {
 			display: block;
+			position: relative;
 		}
-		buttons button {
+		button-box button {
 			border-width: 1px;
 			border-color: lightgray;
 			border-style: solid;
@@ -18,14 +19,22 @@
 			border-bottom-left-radius: 0px;
 			border-bottom-right-radius: 0px;
 			padding: .4em;
+			margin-top: .6em;
+			position: relative;
 		}
-		buttons widgy-button {
-			vertical-align: bottom;
+		button.selected {
+			padding-top: .7em;
+			padding-right: .7em;
+			padding-left: .7em;
+			margin-right: -.3em;
+			margin-left: -.3em;
+			z-index: 1;
 		}
-		buttons widgy-button.selected button {
-			padding: .6em;
+		button:first-child {
+			padding-left: .4em;
+			margin-left: 0em;
 		}
-		> content {
+		div {
 			flex-grow: 2;
 			overflow: auto;
 			display: block;
@@ -36,7 +45,9 @@
 		}
 	</style>
 
-	<buttons></buttons>
-	<content></content>
+	<button-box></button-box>
+	<div>
+		<slot></slot>
+	</div>
 </template>
 

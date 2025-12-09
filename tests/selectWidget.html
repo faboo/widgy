@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="module">
+		import * as widgy from './widgy/widgy.js'
+
+		class App extends widgy.Application {
+			constructor(){
+				super()
+				this.addProperty('selected', 'right')
+			}
+
+			onLeft(){
+				this.selected = 'left'
+			}
+
+			onRight(){
+				this.selected = 'right'
+			}
+		}
+
+		widgy.start(App)
+	</script>
+</head>
+<body>
+	<div>
+		<h1>Select Widget</h1>
+
+		<button onclick="onLeft">Left</button>
+		<button onclick="onRight">Right</button>
+		<select-widget selected="@selected">
+			<div key="left">
+				<p>The left widget</p>
+			</div>
+			<div key="right">
+				<p>The right widget</p>
+			</div>
+		</select-widget>
+
+</body>
+</html>

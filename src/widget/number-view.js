@@ -2,11 +2,11 @@ import {Widget} from '../widget.js'
 
 export default class NumberInput extends Widget{
 	constructor(){
-		super()
-
-		this.addProperty('view', '0')
-		this.addProperty('format', ',.2', this.onFormatChanged)
-		this.addProperty('number', 0, this.onNumberChanged)
+		super(
+			[ ['view', '0']
+			, ['format', ',.2', NumberInput.prototype.onFormatChanged]
+			, ['number', 0, NumberInput.prototype.onNumberChanged]
+			])
 	}
 
 	readFormatNumber(formatStr){

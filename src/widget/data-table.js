@@ -271,17 +271,14 @@ export default class DataTable extends Widget{
 		if(event.oldValue)
 			event.oldValue.removeEventListener('setvalue', this.onItemsContentChanged)
 
-		if(this.bound){
-			this.#rows.innerHTML = ''
-			this.resetSize()
-			this.updateItems()
-		}
+		this.#rows.innerHTML = ''
+		this.resetSize()
+		this.updateItems()
 
 		this.items.addEventListener('setvalue', this.onItemsContentChanged)
 	}
 
 	onItemsContentChanged(){
-		if(this.bound)
-			this.updateItems()
+		this.updateItems()
 	}
 }

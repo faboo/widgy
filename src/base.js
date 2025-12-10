@@ -10,16 +10,6 @@ const ATTRIBUTE_SUBSTITUTION =
 	{ 'class': 'className'
 	}
 
-const GLOBAL_PROPERTIES =
-	[ [ 'draghandle', 'draggable', false, Boolean ]
-	, [ 'dragtarget', null, false, Boolean ]
-	, [ 'dragborder', null, false, Boolean ]
-
-	, [ 'droptarget', null, false, Boolean ]
-
-	, [ 'class', 'className', '', String ]
-	]
-
 const CHANGE_EVENT =
 	{ input: {value: 'input', checked: 'input'}
 	, textarea: {value: 'input'}
@@ -183,6 +173,43 @@ export function addCompositeProperty(object, name, watchProperties, evaluateCall
 }
 
 
+function rawDragStart(dragTarget, event){
+	if(dragTarget){
+		// TODO: conversion for dragging in/out of the browser?
+		//event.dataTransfer.setData(dragTarget.dragdatatype || '', dragTarget.dragdata)
+		window.application.setDragData(
+			dragTarget.dragdata,
+			dragTarget.dragdatatype || '')
+	}
+
+	event.dataTransfer.effectAllowed = 'move'
+	event.dataTransfer.setDragImage(dragTarget, 0, 0)
+}
+
+
+function bindDragAndDrop(element){
+	if(element.draghandle){
+		let dragTarget = element.closest('*[dragtarget]')
+		
+		element.addEventListener('dragstart', event => rawDragStart(dragTarget, event))
+	}
+
+	if(element.droptarget){
+		let dropContainer = element.closest('*[dropcontainer]')
+
+		if(dropContainer instanceof Widget){
+			element.addEventListener('drop', event => dropContainer.rawDrop(event))
+			element.addEventListener('dragover', event => dropContainer.rawDragover(event))
+		}
+		if(element instanceof Widget){
+			element.addEventListener('dragenter', event => element.rawDragenter(event))
+			element.addEventListener('dragleave', event => element.rawDragleave(event))
+			element.addEventListener('drop', event => element.rawDragleave(event))
+		}
+	}
+}
+
+
 export class Binder {
 	#bindings //TODO: This is a problem. Detached child elements can leak bindings
 	#boolAttributes
@@ -318,6 +345,7 @@ export class Binder {
 		while(tree.nextNode()){
 			if(tree.currentNode.nodeType == document.ELEMENT_NODE){
 				this.bindAttributes(context, tree.currentNode)
+				bindDragAndDrop(tree.currentNode)
 
 				if(tree.currentNode instanceof HTMLDialogElement && tree.currentNode.id){
 					this.#dialogs[tree.currentNode.id] = tree.currentNode
@@ -356,8 +384,121 @@ export class Binder {
 	}
 }
 
-export class Widgy{
-	static customWidgetBase = BASE.replace(/\/[^/]+$/, '')
+export class Widget extends HTMLElement{
+	static #domParser = new DOMParser()
+	static custom = true
+
+	#bound
+
+	constructor(props, dontBind){
+		super()
+
+		this.#bound = false
+		this.parent = this.findParent()
+		this.binder = new Binder(this)
+
+		addProperty(this, 'shown', null, this.onShownChanged)
+		this.#addProperties(props)
+		this.#createShadow()
+
+		if(!dontBind)
+			this.bind()
+
+		/* Drag and Drop */
+		addProperty(this, 'dragdata')
+		addProperty(this, 'dragdatatype')
+		//this.addProperty('dropTarget', false, null, Boolean)
+		addProperty(this, 'dropdatatype')
+		addProperty(this, 'dropcontainer', false, null, Boolean)
+		addProperty(this, 'dropover', false)
+	}
+
+	findParent() {
+		let parentNode = this.parentNode
+		
+		while(!parentNode.host && parentNode.parentNode){
+			parentNode = parentNode.parentNode
+		}
+
+		return parentNode.host || window.application
+	}
+
+	#createShadow(){
+		const template = document.getElementById('widgy-template-'+this.localName)
+
+		if(template){
+			this.attachShadow({ mode: "open" });
+			this.shadowRoot.appendChild(template.content.cloneNode(true));
+		}
+	}
+
+	#addProperties(props){
+		for(let prop of props){
+			let name = prop[0]
+
+			if(name !== name.toLowerCase())
+				console.warn(`Widget properties should be all lowercase - ${this.constructor.name}.${name} is not`)
+
+			if(prop[2])
+				prop[2] = prop[2].bind(this)
+			addProperty.apply(null, [this, ...prop])
+		}
+	}
+
+
+	bind(){
+		this.binder.bind()
+		this.#bound = true
+	}
+
+	get bound(){
+		return this.#bound
+	}
+
+	attributeChangedCallback(){
+		console.log(arguments)
+	}
+
+	onShownChanged(){
+		if(this.shown !== null)
+			this.hidden = !this.shown
+	}
+
+	onDrop(event, data, type){
+	}
+
+	rawDrop(event){
+		let type = this.application.getDragDataType()
+		let data = this.application.takeDragData()
+
+		event.preventDefault()
+
+		this.onDrop(event, data, type)
+	}
+
+	rawDragover(event){
+		if(!this.dropdatatype || window.application.getDragDataType() == this.dropdatatype){
+			//event.dataTransfer.dropEffect = 'move'
+			event.preventDefault()
+		}
+		else{
+			//event.dataTransfer.dropEffect = 'none'
+		}
+	}
+
+	rawDragenter(event){
+		this.dropover = true
+	}
+
+	rawDragleave(event){
+		this.dropover = false
+	}
+
+	isVisible(){
+		let hasSize = this.root.offsetWidth || this.root.offsetHeight || this.root.getClientRects().length
+
+		return !!hasSize
+	}
 
 	sleep(until, msdelay){
 		if(!msdelay)
@@ -373,41 +514,10 @@ export class Widgy{
 			setTimeout(finished, msdelay)
 		})
 	}
+}
 
-	bindDragAndDrop(child){
-		if(child.draghandle || (child.widget && child.widget.draghandle)){
-			let dragTarget = this.findContainerElement(child, 'dragtarget')
-			
-			child.addEventListener('dragstart', event => this.rawDragStart(dragTarget, event))
-		}
+export class Widgy{
+	static customWidgetBase = BASE.replace(/\/[^/]+$/, '')
 
-		if(child.droptarget || (child.widget && child.widget.droptarget)){
-			let dropContainer = this.findContainerElement(child, 'dropContainer')
 
-			if(dropContainer.widget){
-				child.addEventListener('drop', event => dropContainer.widget.rawDrop(event))
-				child.addEventListener('dragover', event => dropContainer.widget.rawDragover(event))
-			}
-			if(child.widget){
-				child.addEventListener('dragenter', event => child.widget.rawDragenter(event))
-				child.addEventListener('dragleave', event => child.widget.rawDragleave(event))
-				child.addEventListener('drop', event => child.widget.rawDragleave(event))
-			}
-		}
-	}
-
-	rawDragStart(dragTarget, event){
-		let targetWidget = dragTarget.widget
-
-		if(targetWidget){
-			// TODO: conversion for dragging in/out of the browser?
-			//event.dataTransfer.setData(targetWidget.dragdatatype || '', targetWidget.dragdata)
-			window.application.setDragData(
-				targetWidget.dragdata,
-				targetWidget.dragdatatype || '')
-		}
-
-		event.dataTransfer.effectAllowed = 'move'
-		event.dataTransfer.setDragImage(dragTarget, 0, 0)
-	}
 }

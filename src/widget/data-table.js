@@ -1,5 +1,5 @@
 import {LiveValue} from '../events.js'
-import {Widget} from '../widget.js'
+import {Widget} from '../base.js'
 import {Model} from '../model.js'
 
 export default class DataTable extends Widget{
@@ -14,7 +14,8 @@ export default class DataTable extends Widget{
 		super(
 			[ ['items', null, DataTable.prototype.onItemsChanged]
 			, ['offset', 0]
-			])
+			],
+			true)
 
 		this.rowHeight = null
 		this.headings = []
@@ -31,6 +32,7 @@ export default class DataTable extends Widget{
 
 		this.shadowRoot.addEventListener('scroll', this.onScroll.bind(this))
 		window.addEventListener('resize', this.onResize.bind(this))
+		this.binder.bind()
 
 		this.buildThead()
 		this.updateItems()

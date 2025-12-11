@@ -1,6 +1,6 @@
 import {LiveValue} from '../events.js'
 import {LiveObject} from '../model.js'
-import {Widget} from '../widget.js'
+import {Widget} from '../base.js'
 
 export default class ItemsView extends Widget{
 	#onItemsContentChanged

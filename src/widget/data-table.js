@@ -2,6 +2,11 @@ import {LiveValue} from '../events.js'
 import {Widget} from '../base.js'
 import {Model} from '../model.js'
 
+/* These don't need to do anyting except exist */
+class DataCol extends HTMLElement {
+}
+customElements.define('data-col', DataCol)
+
 export default class DataTable extends Widget{
 	#template
 	#table

@@ -1,21 +1,46 @@
 <template>
 	<style>
-		h2{
-			margin-top: 0;
-			padding: .5ex;
+		div{
+			padding: 1ex;
+		}
+
+		header {
+			display: block;
+			background: #4444;
+			padding: 1rem;
+
+			h2{
+				margin-top: 0;
+				padding: .5ex;
+			}
+		}
+		main{
+			display: block;
+			margin: 1ex;
+		}
+		button-box{
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			justify-content: space-evenly;
+		}
+		button-box button{
+			min-width: 8vh;
 		}
 	</style>
 
-	<header>
-		<h2>{title}</h2>
-	</header>
+	<div>
+		<header part="header">
+			<h2>{title}</h2>
+		</header>
 
-	<content>
-		<p>{message}</p>
-	</content>
+		<main part="main">
+			<p>{message}</p>
+		</main>
 
-	<buttons>
-		<button onClick="okClicked">{button-text}</button>
-	</buttons>
+		<button-box part="buttons">
+			<button onclick="okClicked">{ok-text}</button>
+		</buttons-box>
+	</div>
 </template>
 

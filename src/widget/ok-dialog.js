@@ -1,19 +1,17 @@
-import Dialog from './dialog.js'
+import BasicDialog from './basic-dialog.js'
 
-export default class OkDialog extends Dialog{
+export default class OkDialog extends BasicDialog{
 	constructor(){
-		super()
-
-		this.addProperty('title')
-		this.addProperty('message')
-		this.addProperty('button-text', 'OK')
+		super(
+			[ ['title']
+			, ['message']
+			, ['ok-text', 'OK']
+			])
 	}
 
 	okClicked(){
+		this.triggerEvent('ok')
 		this.close()
 		this.setButtonClicked('ok')
 	}
 }
-
-OkDialog.elementName = 'ok-dialog'
-OkDialog.safeElementName = 'ok-dialog'

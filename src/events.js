@@ -662,27 +662,11 @@ export class LiveText{
 }
 
 
-export class SlottedEvent extends Event{
-	data
-
-	constructor(widget, data){
-		super('slottedEvent', {bubbles: true})
+export class WidgetEvent extends Event{
+	constructor(name, widget, data){
+		super(name, {bubbles: true})
 
 		this.widget = widget
 		this.data = data
-	}
-}
-
-
-export class EventSlot extends EventTarget{
-	#widget
-	constructor(widget){
-		super()
-		this.#widget = widget
-	}
-
-	trigger(data){
-		let event = new SlottedEvent(this.#widget, data)
-		this.dispatchEvent(event)
 	}
 }

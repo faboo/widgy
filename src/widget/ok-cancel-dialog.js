@@ -1,26 +1,23 @@
-import Dialog from './dialog.js'
+import BasicDialog from './basic-dialog.js'
 
-export default class OkCancelDialog extends Dialog{
+export default class OkCancelDialog extends BasicDialog{
 	constructor(){
-		super()
-
-		this.addProperty('title')
-		this.addProperty('message')
-		this.addProperty('ok-text', 'OK')
-		this.addProperty('cancel-text', 'Cancel')
-
-		this.addEventSlot('onOk')
-		this.addEventSlot('onCancel')
+		super(
+			[ ['title']
+			, ['message']
+			, ['ok-text', 'OK']
+			, ['cancel-text', 'Cancel']
+			])
 	}
 
 	okClicked(){
-		this.triggerEvent('onOk')
+		this.triggerEvent('ok')
 		this.close()
 		this.setButtonClicked('ok')
 	}
 
 	cancelClicked(){
-		this.triggerEvent('onCancel')
+		this.triggerEvent('cancel')
 		this.close()
 		this.setButtonClicked('cancel')
 	}

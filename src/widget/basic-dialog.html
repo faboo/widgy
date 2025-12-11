@@ -1,39 +1,36 @@
 <template>
 	<style>
-		{
-			margin-top: 4vh;
+		div{
 			padding: 1ex;
-			border-width: .1rem;
-			border-radius: .2rem;
 		}
 
-		>header {
+		header {
 			display: block;
 			background: #4444;
+			padding: 1rem;
 		}
-		>content{
+		main{
 			display: block;
 			margin: 1ex;
 		}
-		>buttons{
+		button-box{
 			display: flex;
 			flex-direction: row;
 			flex-wrap: wrap;
 			justify-content: space-evenly;
 		}
-		>buttons button{
+		button-box button{
 			min-width: 8vh;
 		}
-		
 	</style>
 
-	<dialog open>
-		<header></header>
+	<div>
+		<header part="header"><slot name="header"></slot></header>
 
-		<content></content>
+		<main part="main"><slot name="main"></slot></main>
 
 		<hr />
 
-		<buttons></buttons>
-	</dialog>
+		<button-box part="buttons"><slot name="button"></slot></button-box>
+	</div>
 </template>

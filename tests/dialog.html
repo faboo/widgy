@@ -7,15 +7,32 @@
 		class App extends widgy.Application {
 			constructor(){
 				super()
+				this.dialog = null
 			}
 
 			onOpen(event){
+				this.dialog = 'dialog'
 				this.binder.openDialog('dialog')
 			}
 
+			onOpenBasic(event){
+				this.dialog = 'basic'
+				this.binder.openDialog('basic')
+			}
+
+			onOpenOk(event){
+				this.dialog = 'ok'
+				this.binder.openDialog('ok')
+			}
+
+			onOpenOkCancel(event){
+				this.dialog = 'okcancel'
+				this.binder.openDialog('okcancel')
+			}
+
 			onClose(event){
-				console.log(event)
-				this.binder.closeDialog('dialog')
+				this.binder.closeDialog(this.dialog)
+				this.dialog = null
 			}
 		}
 
@@ -27,12 +44,33 @@
 		<h1>Dialog</h1>
 
 		<button onclick="onOpen">Open Dialog</button>
+		<button onclick="onOpenBasic">Open Basic Dialog</button>
+		<button onclick="onOpenOk">Open OK Dialog</button>
+		<button onclick="onOpenOkCancel">Open OK-Cancel Dialog</button>
 	</div>
 
 	<dialog id="dialog">
 		<h1>Hi!</h1>
 
 		<button onclick="onClose">Close</button>
+	</dialog>
+
+	<dialog id="basic">
+		<basic-dialog>
+			<h1 slot="header">Hi!</h1>
+
+			<p slot="main">Hello this is a dialog</p>
+
+			<button slot="button" onclick="onClose">Close</button>
+		</basic-dialog>
+	</dialog>
+
+	<dialog>
+		<ok-dialog id="ok" ok-text="Okay...." title="What do?" message="Is this okay?"></ok-dialog>
+	</dialog>
+
+	<dialog>
+		<ok-cancel-dialog id="okcancel" ok-text="Okay...." title="What do?" message="Is this okay?"></ok-cancel-dialog>
 	</dialog>
 </body>
 </html>

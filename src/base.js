@@ -1,6 +1,7 @@
 export const BASE = import.meta.url.replace(/\/[^\/]*\.js/, '')
 
-import {isListenable, ValueChangeEvent, LiveValue, LiveTextValue, LiveText, LiveAttribute, EventSlot, BindingExpression} from './events.js'
+import {isListenable, ValueChangeEvent, LiveValue, LiveTextValue, LiveText, LiveAttribute, WidgetEvent, BindingExpression}
+	from './events.js'
 
 const NO_RECURSE_TAG =
 	[ 'style', 'script', 'template'
@@ -26,12 +27,25 @@ const WIDGY_WIDGETS =
 	, 'text-input'
 	, 'select-widget'
 	, 'tab-widget'
+	, 'basic-dialog'
+	, 'ok-cancel-dialog'
+	, 'ok-dialog'
 	]
 
 const domParser = new DOMParser()
 
+export const customWidgetBase = BASE.replace(/\/[^/]+$/, '')
 
-export async function loadWidgetClass(urlBase){
+
+export function setCustomWidgetBase(urlBase){
+	customWidgetBase = urlBase
+
+	if(!customWidgetBase.endsWith('/'))
+		customWidgetBase += '/'
+}
+
+
+async function loadWidgetClass(urlBase){
 	let module = await import(urlBase+'.js')
 	
 	return module.default
@@ -54,15 +68,15 @@ async function ensureTemplate(tagName, urlBase){
 }
 
 
-async function loadWidget(tagName){
+export async function loadWidget(tagName){
 	if(customElements.get(tagName)) return
 
 	let custom = !WIDGY_WIDGETS.includes(tagName)
 	let urlBase = custom
-		? Widgy.customWidgetBase + '/' + tagName
+		? customWidgetBase + '/' + tagName
 		: BASE + '/widget/' + tagName
 	let widgetClass = await loadWidgetClass(urlBase)
-	
+
 	await ensureTemplate(tagName, urlBase)
 
 	customElements.define(tagName, widgetClass)
@@ -139,6 +153,7 @@ export function addProperty(object, name, initialValue, onChange, coerceType){
 				})
 		}
 		else{
+			property.value = object[name]
 			property.addEventListener('setvalue', update)
 			if(object.localName in CHANGE_EVENT && name in CHANGE_EVENT[object.localName]){
 				object.addEventListener(CHANGE_EVENT[object.localName][name], nativeUpdate)
@@ -339,15 +354,20 @@ export class Binder {
 	bindElement(parent, context, element, root){
 		let tree = this.createTreeWalker(root)
 
-		if(parent)
+		if(parent){
 			this.bindAttributes(parent, element)
+
+			if(element.id && element.constructor.isDialog){
+				parent.binder.#dialogs[element.id] = element
+			}
+		}
 
 		while(tree.nextNode()){
 			if(tree.currentNode.nodeType == document.ELEMENT_NODE){
 				this.bindAttributes(context, tree.currentNode)
 				bindDragAndDrop(tree.currentNode)
 
-				if(tree.currentNode instanceof HTMLDialogElement && tree.currentNode.id){
+				if(tree.currentNode.id && tree.currentNode instanceof HTMLDialogElement){
 					this.#dialogs[tree.currentNode.id] = tree.currentNode
 				}
 			}
@@ -365,6 +385,8 @@ export class Binder {
 
 
 	bind(){
+		if(this.parent)
+			this.bindElement(null, this.parent, this.container, this.container)
 		this.bindElement(this.parent, this.container, this.container, this.root)
 	}
 
@@ -385,7 +407,6 @@ export class Binder {
 }
 
 export class Widget extends HTMLElement{
-	static #domParser = new DOMParser()
 	static custom = true
 
 	#bound
@@ -398,7 +419,7 @@ export class Widget extends HTMLElement{
 		this.binder = new Binder(this)
 
 		addProperty(this, 'shown', null, this.onShownChanged)
-		this.#addProperties(props)
+		this.#addProperties(props||[])
 		this.#createShadow()
 
 		if(!dontBind)
@@ -500,6 +521,11 @@ export class Widget extends HTMLElement{
 		return !!hasSize
 	}
 
+	triggerEvent(name, data){
+		let event = new WidgetEvent(name, this, data)
+		this.dispatchEvent(event)
+	}
+
 	sleep(until, msdelay){
 		if(!msdelay)
 			msdelay = 1
@@ -516,8 +542,3 @@ export class Widget extends HTMLElement{
 	}
 }
 
-export class Widgy{
-	static customWidgetBase = BASE.replace(/\/[^/]+$/, '')
-
-
-}

@@ -1,21 +1,20 @@
-export {LiveValue, ValueChangeEvent, SlottedEvent} from './events.js'
-export {Widgy} from './base.js'
-export {Widget} from './widget.js'
+export {LiveValue, ValueChangeEvent} from './events.js'
+export {Widget} from './base.js'
 export {Application} from './application.js'
 export {Model, LiveObject, LiveArray} from './model.js'
 export {View, ArrayView} from './view.js'
 export {RemoteStore, Dropbox, DatabaseEvent} from './storage.js'
 
-import {Widgy, loadWidgets, loadWidgetClass} from './base.js'
+import {Widget, setCustomWidgetBase, loadWidgets, loadWidget} from './base.js'
 import {Application} from './application.js'
 
 export function preloadWidget(name){
-	loadWidgetClass(Widgy.customWidgetBase+name)
+	loadWidget(name)
 }
 
 export async function start(appClass, customWidgetBase){
 	if(customWidgetBase)
-		Widgy.customWidgetBase = customWidgetBase
+		setCustomWidgetBase(customWidgetBase)
 
 	if(appClass == undefined)
 		appClass = Application

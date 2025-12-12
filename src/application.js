@@ -25,6 +25,10 @@ export class Application extends LiveObject{
 		this.addProperty('title', '', this.onTitleChange.bind(this))
 	}
 
+	get childKeys(){
+		return this.binder.keys
+	}
+
 	async init(){
 		if(document.head.querySelector(`link[href='${CSS_URL}']`)) return
 		let css = document.createElement('link')

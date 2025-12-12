@@ -229,22 +229,29 @@ export class Binder {
 	#bindings //TODO: This is a problem. Detached child elements can leak bindings
 	#boolAttributes
 	#dialogs
+	#keys
 
 	constructor(container){
 		this.#boolAttributes = []
 		this.#bindings = []
 		this.#dialogs = {}
+		this.#keys = {}
 		this.container = container
 	}
 
 
-	get root() {
+	get root(){
 		return this.container.shadowRoot || document
 	}
 
 
-	get parent() {
+	get parent(){
 		return this.container.parent
+	}
+
+
+	get keys(){
+		return this.#keys
 	}
 
 
@@ -370,6 +377,9 @@ export class Binder {
 				if(tree.currentNode.id && tree.currentNode instanceof HTMLDialogElement){
 					this.#dialogs[tree.currentNode.id] = tree.currentNode
 				}
+				if(tree.currentNode.key){
+					this.#keys[tree.currentNode.key] = tree.currentNode
+				}
 			}
 			// TEXT_NODE
 			else if(hasLiveText(tree.currentNode.textContent)){
@@ -474,6 +484,10 @@ export class Widget extends HTMLElement{
 
 	get bound(){
 		return this.#bound
+	}
+
+	get childKeys(){
+		return this.binder.keys
 	}
 
 	attributeChangedCallback(){

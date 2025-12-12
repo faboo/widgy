@@ -163,6 +163,8 @@ export function addProperty(object, name, initialValue, onChange, coerceType){
 		if(onChange)
 			property.addEventListener('setvalue', onChange)
 	}
+
+	return object[propName]
 }
 
 
@@ -265,9 +267,12 @@ export class Binder {
 
 		elm.observer = new MutationObserver(mutations => {
 			for(let mutation of mutations){
-				let property = elm[mutation.attributeName+'Property']
-				let value = elm[mutation.attributeName] // TODO?
-				if(property && property.value !== value){
+				if(mutation.attributeName.startsWith('on')) continue
+				let name = ATTRIBUTE_SUBSTITUTION[mutation.attributeName] || mutation.attributeName
+				let value = elm[name]
+				let property = addProperty(elm, name, value)
+
+				if(property.value !== value){
 					property._overrideValue(value)
 					property.dispatchEvent(new ValueChangeEvent(property, mutation.oldValue))
 				}
@@ -308,6 +313,8 @@ export class Binder {
 
 
 	bindAttributes(context, elm){
+		this.addObserver(elm)
+
 		for(let attr of elm.attributes){
 			let name = attr.name in ATTRIBUTE_SUBSTITUTION? ATTRIBUTE_SUBSTITUTION[attr.name] : attr.name
 			let value
@@ -319,7 +326,6 @@ export class Binder {
 				attr.value = ''
 			}
 			else if(attr.value.startsWith('@')){
-				this.addObserver(elm)
 				addProperty(elm, name, attr.value)
 
 				value = new BindingExpression(

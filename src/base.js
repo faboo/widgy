@@ -279,7 +279,7 @@ export class Binder {
 			}
 		})
 
-		elm.observer.observe(elm, {attributes: true})
+		elm.observer.observe(elm, {attributes: true}) //TODO: subtree: true <- then we can watch a whole tree with one observer
 	}
 
 

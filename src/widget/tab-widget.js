@@ -34,10 +34,10 @@ export default class TabWidget extends SelectWidget{
 	}
 
 	onTabClicked(event){
-		let button = this.shadowRoot.querySelector(`button[key=${this.selected}`)
+		let button = this.shadowRoot.querySelector(`button[key="${this.selected}"]`)
 		if(button) button.className = ''
 		this.selected = event.target.key
-		button = this.shadowRoot.querySelector(`button[key=${this.selected}`)
+		button = this.shadowRoot.querySelector(`button[key="${this.selected}"]`)
 		if(button) button.className = 'selected'
 	}
 

@@ -15,10 +15,10 @@ export default class TabWidget extends SelectWidget{
 
 		for(let pane of this.shadowRoot.querySelector('slot').assignedElements()){
 			let key = pane.attributes['key'].value
-			let title = pane.attributes['title'].value
+			let title = pane.getAttribute('title') || key
 			let button = document.createElement('button')
 
-			button.innerText = title || key
+			button.innerText = title
 			button.setAttribute('key', key)
 			button.setAttribute('onClick', 'onTabClicked')
 

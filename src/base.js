@@ -143,7 +143,7 @@ export function addProperty(object, name, initialValue, onChange, coerceType){
 			, writable: false
 			, enumerable: false
 			})
-		if(!(name in object)){
+		if(!(name in object.constructor.prototype)){
 			Object.defineProperty(
 				object,
 				name,

@@ -7,21 +7,17 @@ export default class ItemsView extends Widget{
 	#template
 	#context
 
-	constructor(props, dontBind){
+	constructor(props){
 		super(
 			[ ['items', null, ItemsView.prototype.onItemsChanged]
 			, ...(props||[])
-			],
-			true)
+			])
 
 		this.template = this.querySelector('template') 
 			|| this.shadowRoot.querySelector('template#default')
 		this.container = this.shadowRoot.querySelector(this.containerTagName)
 
 		this.#onItemsContentChanged = this.onItemsContentChanged.bind(this)
-
-		if(!dontBind)
-			this.bind()
 	}
 
 	get containerTagName(){

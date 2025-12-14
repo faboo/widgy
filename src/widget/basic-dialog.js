@@ -5,13 +5,22 @@ export default class BasicDialog extends Widget{
 	#buttonClicked
 	#resolveButtonClick
 
-	constructor(props, dontBind){
-		super(props, dontBind)
-		this.dialog = this.closest('dialog')
+	constructor(props){
+		super(props)
 	}
 	
 	get buttonClicked(){
 		return this.#buttonClicked
+	}
+
+	connectedCallback(){
+		super.connectedCallback()
+		this.dialog = this.closest('dialog')
+	}
+
+	adoptedCallback(){
+		super.adoptedCallback()
+		this.dialog = this.closest('dialog')
 	}
 
 	showModal(){

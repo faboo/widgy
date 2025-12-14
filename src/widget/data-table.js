@@ -1,5 +1,5 @@
 import {LiveValue} from '../events.js'
-import {Widget} from '../base.js'
+import {Widget, addProperty} from '../base.js'
 import {Model} from '../model.js'
 
 /* These don't need to do anyting except exist */
@@ -9,7 +9,6 @@ customElements.define('data-col', DataCol)
 
 export default class DataTable extends Widget{
 	#template
-	#table
 	#rows
 	#context
 	#scrolling
@@ -28,19 +27,18 @@ export default class DataTable extends Widget{
 		this.#scrolling = false
 		this.#resizing = false
 		this.#template = this.getTemplate()
-		this.#table = this.shadowRoot.querySelector('table')
 		this.#rows = this.shadowRoot.querySelector('tbody')
 
 		this.onItemsContentChanged = this.onItemsContentChanged.bind(this)
 		this.adjustBoundItems = this.adjustBoundItems.bind(this)
 		this.resetSize = this.resetSize.bind(this)
 
-		this.shadowRoot.addEventListener('scroll', this.onScroll.bind(this))
+		this.addEventListener('scroll', this.onScroll.bind(this))
 		window.addEventListener('resize', this.onResize.bind(this))
 		this.binder.bind()
 
 		this.buildThead()
-		this.updateItems()
+		this.onItemsChanged({})
 	}
 
 	getTemplate(){
@@ -50,6 +48,8 @@ export default class DataTable extends Widget{
 		let fillIndex = []
 		let totalWidth = 0
 		let fillWidth = 0
+
+		template.setAttribute('part', 'tr')
 		
 		for(let columnIdx = 0; columnIdx < columns.length; columnIdx += 1){
 			let column = columns[columnIdx]
@@ -84,14 +84,10 @@ export default class DataTable extends Widget{
 	}
 
 
-	async measureRow(){
-		let item = this.items[0]
-		let row = this.createRowElement()
+	measureRow(){
+		let item = this.items.at(0)
+		let row = this.createRowElement(0, item)
 		let rect
-		
-		this.bindRowElement(row, item, 0)
-
-		//this.#rows.appendChild(row)
 
 		this.insertRow(row)
 
@@ -104,22 +100,18 @@ export default class DataTable extends Widget{
 		let row = this.#template.cloneNode(true)
 		let context = Model.create(
 			{ item
-			, index
+			, index: index + 1
 			, parent: this.parent
 			})
 
-		row.widget = this
-		row.context = context
+		addProperty(row, 'dataContext', context)
 
-		for(let elm of row.children)
-			this.binder.bindItem(context, row)
+		this.binder.bindItem(context, row)
 
 		for(let index in this.widths){
 			let width = this.widths[index]
 			row.children[index].setAttribute('style', `width: ${width}%`)
 		}
-
-		row.setAttribute('style', `top: ${top}px`)
 
 		return row
 	}
@@ -127,10 +119,8 @@ export default class DataTable extends Widget{
 	bindRowElement(row, value, index){
 		let top = index * (this.rowHeight || 0)
 
-		row.context.item = value
-		row.context.index = index + 1
-
-		row.liveValue = value
+		row.dataContext.item = value
+		row.dataContext.index = index + 1
 
 		row.setAttribute('style', `top: ${top}px`)
 	}
@@ -167,7 +157,7 @@ export default class DataTable extends Widget{
 
 		// Make sure we know how big a row is
 		if(this.items.length && this.rowHeight === null){
-			await this.measureRow()
+			this.measureRow()
 		}
 
 		// Set the scrollable area to match how many items we have (virtual
@@ -204,12 +194,12 @@ export default class DataTable extends Widget{
 		let beforeRow = null
 
 		for(let candidate of this.#rows.childNodes){
-			if(row.context.index == candidate.context.index){
+			if(row.dataContext.index == candidate.dataContext.index){
 				console.log('Row already exists: ')
 				console.log(row)
 			}
 
-			if(row.context.index < candidate.context.index){
+			if(row.dataContext.index < candidate.dataContext.index){
 				beforeRow = candidate
 				break
 			}
@@ -236,7 +226,7 @@ export default class DataTable extends Widget{
 
 		// Free up bindable rows that aren't visible
 		for(let row of this.#rows.children){
-			let index = row.context.index - 1
+			let index = row.dataContext.index - 1
 
 			if(priorFirstIndex === 0)
 				priorFirstIndex = index
@@ -248,7 +238,7 @@ export default class DataTable extends Widget{
 				assignedIndexes[index] = true
 
 				// Update this item if it changed
-				if(row.context.item !== this.items.at(index))
+				if(row.dataContext.item !== this.items.at(index))
 					this.bindRowElement(row, this.items.at(index), index)
 			}
 		}

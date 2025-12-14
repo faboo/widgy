@@ -558,6 +558,7 @@ export class LiveTextValue extends EventTarget {
 		this.#onChange = this.onChange.bind(this)
 		this.#bindings = []
 
+		this.template = template
 		this.getBindings()
 
 		this.interpolateText()

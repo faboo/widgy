@@ -10,8 +10,7 @@ export default class ComboBox extends ItemsView{
 			, ['items', null, ComboBox.prototype.onItemsChanged]
 			, ['editable', false, ComboBox.prototype.onEditableChanged, Boolean]
 			, ['hideinput', true]
-			],
-			true)
+			])
 
 		if(this.items){
 			if(this.querySelector('optgroup, option'))
@@ -26,8 +25,6 @@ export default class ComboBox extends ItemsView{
 				this.container.append(option)
 			}
 		}
-
-		this.bind()
 
 		//this.addEventSlot('onSelect')
 	}

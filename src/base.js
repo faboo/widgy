@@ -95,7 +95,7 @@ export async function loadWidgets(parent){
 		}
 		catch(ex){
 			console.error('Error loading widget: '+tree.currentNode.localName)
-			console.exception(
+			console.error(
 				ex.message+'\n'+ex.fileName+':'+ex.lineNumber+':'+ex.columnNumber)
 		}
 	}
@@ -228,14 +228,13 @@ function bindDragAndDrop(element){
 
 
 export class Binder {
-	#bindings //TODO: This is a problem. Detached child elements can leak bindings
 	#boolAttributes
 	#dialogs
 	#keys
 
 	constructor(container){
 		this.#boolAttributes = []
-		this.#bindings = []
+		this.bindings = []
 		this.#dialogs = {}
 		this.#keys = {}
 		this.container = container
@@ -334,7 +333,7 @@ export class Binder {
 					elm,
 					name)
 				attr.bindingExpression = value
-				this.#bindings.push(value)
+				this.bindings.push(value)
 			}
 			else if(hasLiveText(attr.value)){
 				this.addObserver(elm)
@@ -358,7 +357,7 @@ export class Binder {
 		return document.createTreeWalker(
 			root,
 			NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
-			el => el.shadowRoot || el.localName in NO_RECURSE_TAG
+			el => el.localName && (el.shadowRoot || el.localName in NO_RECURSE_TAG)
 				? NodeFilter.FILTER_REJECT
 				: NodeFilter.FILTER_ACCEPT)
 	}
@@ -407,7 +406,7 @@ export class Binder {
 	}
 
 	unbind(){
-		for(let binding of this.#bindings)
+		for(let binding of this.bindings)
 			binding.destroy()
 	}
 
@@ -427,7 +426,7 @@ export class Widget extends HTMLElement{
 
 	#bound
 
-	constructor(props, dontBind){
+	constructor(props){
 		super()
 
 		this.#bound = false
@@ -438,9 +437,6 @@ export class Widget extends HTMLElement{
 		this.#addProperties(props||[])
 		this.#createShadow()
 
-		if(!dontBind)
-			this.bind()
-
 		/* Drag and Drop */
 		addProperty(this, 'dragdata')
 		addProperty(this, 'dragdatatype')
@@ -450,14 +446,23 @@ export class Widget extends HTMLElement{
 		addProperty(this, 'dropover', false)
 	}
 
+	connectedCallback(){
+		this.parent = this.findParent()
+		this.bind()
+	}
+
+	adoptedCallback(){
+		this.parent = this.findParent()
+	}
+
 	findParent() {
 		let parentNode = this.parentNode
 		
-		while(!parentNode.host && parentNode.parentNode){
+		while(!(parentNode.host || parentNode.dataContext) && parentNode.parentNode){
 			parentNode = parentNode.parentNode
 		}
 
-		return parentNode.host || window.application
+		return parentNode.host || parentNode.dataContext || window.application
 	}
 
 	#createShadow(){

@@ -7,6 +7,10 @@ export default class TabWidget extends SelectWidget{
 		super()
 
 		this.selectedProperty.addEventListener('setvalue', this.onSelectedChanged.bind(this))
+	}
+
+	connectedCallback(){
+		super.connectedCallback()
 		this.buildTabs()
 	}
 

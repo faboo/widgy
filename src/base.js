@@ -62,7 +62,7 @@ async function ensureTemplate(tagName, urlBase){
 
 		template = domParser.parseFromString(text.trim(), 'text/html').querySelector('template')
 		template.id = templateId
-		loadWidgets(template)
+		loadWidgets(template.content)
 		document.querySelector('head').appendChild(template)
 	}
 }
@@ -379,6 +379,7 @@ export class Binder {
 				this.bindAttributes(context, tree.currentNode)
 				bindDragAndDrop(tree.currentNode)
 
+				// TODO: allow a key?
 				if(tree.currentNode.id && tree.currentNode instanceof HTMLDialogElement){
 					this.#dialogs[tree.currentNode.id] = tree.currentNode
 				}
@@ -405,9 +406,15 @@ export class Binder {
 		this.bindElement(this.parent, this.container, this.container, this.root)
 	}
 
+
 	unbind(){
 		for(let binding of this.bindings)
 			binding.destroy()
+	}
+
+
+	getDialog(dialogId){
+		return this.#dialogs[dialogId]
 	}
 
 

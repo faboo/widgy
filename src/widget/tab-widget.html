@@ -5,11 +5,11 @@
 			flex-direction: column;
 		}
 
-		button-box {
+		header {
 			display: block;
 			position: relative;
 		}
-		button-box button {
+		button {
 			border-width: 1px;
 			border-color: lightgray;
 			border-style: solid;
@@ -34,7 +34,7 @@
 			padding-left: .4em;
 			margin-left: 0em;
 		}
-		div {
+		main {
 			flex-grow: 2;
 			overflow: auto;
 			display: block;
@@ -45,9 +45,9 @@
 		}
 	</style>
 
-	<button-box></button-box>
-	<div>
+	<header key="buttons"></header>
+	<main>
 		<slot></slot>
-	</div>
+	</main>
 </template>
 

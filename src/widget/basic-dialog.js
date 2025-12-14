@@ -16,11 +16,15 @@ export default class BasicDialog extends Widget{
 	connectedCallback(){
 		super.connectedCallback()
 		this.dialog = this.closest('dialog')
+		if(!this.dialog)
+			console.error(`Derivitives of BasicDialog must be wrapped in a <dialog> element - ${this.constructor.name} is not`)
 	}
 
 	adoptedCallback(){
 		super.adoptedCallback()
 		this.dialog = this.closest('dialog')
+		if(!this.dialog)
+			console.error(`Derivitives of BasicDialog must be wrapped in a <dialog> element - ${this.constructor.name} is not`)
 	}
 
 	showModal(){

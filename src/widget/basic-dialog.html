@@ -13,24 +13,24 @@
 			display: block;
 			margin: 1ex;
 		}
-		button-box{
+		footer {
 			display: flex;
 			flex-direction: row;
 			flex-wrap: wrap;
 			justify-content: space-evenly;
 		}
-		button-box button{
+		footer button {
 			min-width: 8vh;
 		}
 	</style>
 
-	<div>
+	<div part="box">
 		<header part="header"><slot name="header"></slot></header>
 
 		<main part="main"><slot name="main"></slot></main>
 
 		<hr />
 
-		<button-box part="buttons"><slot name="button"></slot></button-box>
+		<footer part="buttons"><slot name="button"></slot></footer>
 	</div>
 </template>

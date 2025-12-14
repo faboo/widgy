@@ -18,13 +18,13 @@
 			display: block;
 			margin: 1ex;
 		}
-		button-box{
+		footer{
 			display: flex;
 			flex-direction: row;
 			flex-wrap: wrap;
 			justify-content: space-evenly;
 		}
-		button-box button{
+		footer button{
 			min-width: 8vh;
 		}
 	</style>
@@ -38,9 +38,9 @@
 			<p>{message}</p>
 		</main>
 
-		<button-box part="buttons">
+		<footer part="buttons">
 			<button onclick="okClicked">{ok-text}</button>
-		</buttons-box>
+		</footer>
 	</div>
 </template>
 

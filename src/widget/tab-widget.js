@@ -15,7 +15,7 @@ export default class TabWidget extends SelectWidget{
 	}
 
 	buildTabs(){
-		let buttons = this.shadowRoot.querySelector('button-box')
+		let buttons = this.childKeys.buttons
 
 		for(let pane of this.shadowRoot.querySelector('slot').assignedElements()){
 			let key = pane.attributes['key'].value
@@ -46,8 +46,8 @@ export default class TabWidget extends SelectWidget{
 	}
 
 	onSelectedChanged(){
-		if(this.bound && this.#buttons){
-			for(let button of this.#buttons.children){
+		if(this.bound){
+			for(let button of this.childKeys.buttons.children){
 				if(button.key === this.selected)
 					button.className = 'selected'
 				else

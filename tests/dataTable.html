@@ -30,11 +30,6 @@
 						, new TableData({id: 301, name: 'Tova', age: 31})
 						, new TableData({id: 401, name: 'Meg', age: 79})
 						, new TableData({id: 501, name: 'Carlos', age: 15})
-						, new TableData({id: 601, name: 'Thad', age: 27})
-						, new TableData({id: 701, name: 'Gloria', age: 33})
-						, new TableData({id: 801, name: 'Alfie', age: 47})
-						, new TableData({id: 901, name: 'Bart', age: 48})
-						, new TableData({id: '001', name: 'Kirsty', age: 44})
 						])
 			}
 
@@ -72,10 +67,12 @@
 		<button onclick="onChangeItems">Change Items</button>
 
 		<data-table items="@items">
-			<data-col heading="" width="7">{index}</data-col>
-			<data-col heading="ID" width="10">{item.id}</data-col>
-			<data-col heading="Name" width="*">{item.name}</data-col>
-			<data-col heading="Age" width="12">{item.age}</data-col>
+			<template>
+				<data-col heading="" width="7">{index}</data-col>
+				<data-col heading="ID" width="10">{item.id}</data-col>
+				<data-col heading="Name" width="*">{item.name}</data-col>
+				<data-col heading="Age" width="12">{item.age}</data-col>
+			</template>
 		</data-table>
 	</div>
 </body>

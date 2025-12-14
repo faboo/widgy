@@ -1,5 +1,5 @@
 import {LiveValue} from '../events.js'
-import {Widget, addProperty} from '../base.js'
+import {Widget, addProperty, loadWidgets} from '../base.js'
 import {Model} from '../model.js'
 
 /* These don't need to do anyting except exist */
@@ -16,7 +16,7 @@ export default class DataTable extends Widget{
 
 	constructor(){
 		super(
-			[ ['items', null, DataTable.prototype.onItemsChanged]
+			[ ['items', null]
 			, ['offset', 0]
 			],
 			true)
@@ -35,14 +35,18 @@ export default class DataTable extends Widget{
 
 		this.addEventListener('scroll', this.onScroll.bind(this))
 		window.addEventListener('resize', this.onResize.bind(this))
-		this.binder.bind()
+	}
+
+	connectedCallback(){
+		super.connectedCallback()
 
 		this.buildThead()
-		this.onItemsChanged({})
+		this.itemsProperty.addListener(this.onItemsChanged.bind(this))
 	}
 
 	getTemplate(){
-		let columns = this.querySelectorAll('data-col')
+		let rawTemplate = this.querySelector('template')
+		let columns = rawTemplate.content.querySelectorAll('data-col')
 		let template = document.createElement('tr')
 		let fillCell = []
 		let fillIndex = []
@@ -80,6 +84,7 @@ export default class DataTable extends Widget{
 			}
 		}
 
+		loadWidgets(template)
 		return template
 	}
 

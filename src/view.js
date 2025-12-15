@@ -149,7 +149,7 @@ export class ArrayView extends Array{
 
 	addListener(listener){
 		let event = new ArrayChangeEvent(this)
-		this.addEventListener('setchange', listener)
+		this.addEventListener('setvalue', listener)
 
 		if(listener instanceof Function)
 			listener(event)

@@ -1,4 +1,4 @@
-import {LiveValue, CompositeValue, isListenable} from './events.js'
+import {LiveValue, ValueChangeEvent, CompositeValue, isListenable} from './events.js'
 
 export class LiveObject{
 	addProperty(name, initialValue, onChange, coerceType){
@@ -407,6 +407,121 @@ export class Model extends LiveObject{
             }
         }
     }
+
+	toPOJO(){
+		let obj = {}
+
+		for(let prop in this){
+			let value = this[prop]
+
+			if(value !== null && value.toPOJO instanceof Function)
+				value = value.toPOJO()
+
+			obj[prop] = value
+		}
+
+		return obj
+	}
+}
+
+
+export class DictChangeEvent extends Event{
+	#dict
+	#propertyAdded
+	#propertyDeleted
+	#value
+
+	constructor(dict, added, deleted, value){
+		super('setvalue', {bubbles: true})
+
+		this.#dict = dict
+		this.#propertyAdded = added
+		this.#propertyDeleted = deleted
+		this.#value = value
+	}
+
+	get dict(){
+		return this.#dict
+	}
+
+	get propertyAdded(){
+		return this.#propertyAdded
+	}
+
+	get propertyDeleted(){
+		return this.#propertyDeleted
+	}
+
+	get value(){
+		return this.#value
+	}
+}
+
+class LiveDict extends EventTarget {
+	#model
+	#dispatchValueChanged
+
+	constructor(contents, valueModel){
+		this.#model = valueModel
+		this.#dispatchValueChanged = this.dispatchValueChanged.bind(this)
+
+		for([key, value] of Object.entries(contents))
+			this.set(key, value)
+	}
+
+	set(key, value){
+		if(!(key in this)){
+			let keyProperty = key+'Property'
+			
+			Object.defineProperties(
+				this,
+				{ [key]:
+					{ get: () => this[keyProperty].value
+					, set: (value) => this[keyProperty].value = value
+					, enumerable: true
+					}
+				, [keyProperty]:
+					{ value: new LiveValue(value, key, this, null)
+					, writable: false
+					, enumerable: false
+					}
+				})
+
+			this[keyProperty].addEventListener('setvalue', this.#dispatchValueChanged)
+
+			this.dispatchEvent(new DictChangeEvent(this, key, null, value))
+		}
+		else{
+			this[key] = value
+		}
+	}
+
+	get(key){
+		return this[key]
+	}
+
+	del(key){
+		let keyProperty = key+'Property'
+		let value = this[key]
+		
+		this[keyProperty].removeEventListener('setvalue', this.#dispatchValueChanged)
+		delete this[key]
+		delete this[keyProperty]
+		this.dispatchEvent(new DictChangeEvent(this, null, key, value))
+	}
+
+	get value() {
+		return this
+	}
+
+	addListener(listener){
+		this.addListener('setvalue', listener)
+		// call listener?
+	}
+
+	dispatchValueChanged(evt){
+		this.dispatchEvent(evt)
+	}
 
 	toPOJO(){
 		let obj = {}

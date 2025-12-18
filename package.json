@@ -1,0 +1,10 @@
+{
+	"name": "widgy",
+	"type": "module",
+	"scripts": {
+		"test": "ava"
+	},
+	"devDependencies": {
+		"ava": "^6.4.1"
+	}
+}

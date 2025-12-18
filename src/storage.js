@@ -85,14 +85,12 @@ export class Database extends EventTarget{
 	}
 
 	#db
-	#upgradeDatabase
 	#remoteStore
 
 	constructor(name, schema){
 		super()
 
 		this.#remoteStore = null
-		this.#upgradeDatabase = this.upgradeDatabase.bind(this)
 		this.name = name
 		this.schema = schema
 	}
@@ -132,31 +130,54 @@ export class Database extends EventTarget{
 		this.#db.close()
 	}
 
-	upgradeDatabase(upgradeDB){
+	canUpgradeObjectstore(upgradeDB, objectName){
+		let can = true
+		let tx = upgradeDB.transaction([objectName], 'read')
+		let store = tx.objectStore(objectName)
+
+		return can
+	}
+
+	async upgradeDatabase(upgradeDB){
 		for(let objectName in (this.schema.objects || {})){
 			let objectSchema = this.schema.objects[objectName]
 			let storeExists = Array.prototype.includes.call(upgradeDB.objectStoreNames, objectName)
+			let restoreItems = [ ]
 			let store
 
 			if(storeExists){
-				// TODO: pull and reinsert existing objects
-				upgradeDB.deleteObjectStore(objectName)
+				if(
+
+				else{
+					// TODO: pull and reinsert existing objects
+					restoreItems[objectName] = await promise(store.getAll())
+					upgradeDB.deleteObjectStore(objectName)
+					storeExists = false
+				}
 			}
 
-			store = upgradeDB.createObjectStore(
-				objectName,
-				{ keyPath: objectSchema.keyProperty
-				, autoIncrement: objectSchema.keyType === 'autoincrement'
-				})
-
-			for(let index of (this.schema.indices || [])){
-				store.createIndex(
-					index.name,
-					index.keyPath,
-					{ unique: index.unique
-					, multiEntry: index.multiEntry
-					, locale: index.locale
+			if(!storeExists){
+				store = upgradeDB.createObjectStore(
+					objectName,
+					{ keyPath: objectSchema.keyProperty
+					, autoIncrement: objectSchema.keyType === 'autoincrement'
 					})
+
+				for(let index of (this.schema.indices || [])){
+					store.createIndex(
+						index.name,
+						index.keyPath,
+						{ unique: index.unique
+						, multiEntry: index.multiEntry
+						, locale: index.locale
+						})
+				}
+			}
+
+			let tx = upgradeDB.transaction([objectName], 'write')
+			let store = tx.objectStore(objectName)
+			for(let object of restoreItems){
+				store.add(object)
 			}
 		}
 	}

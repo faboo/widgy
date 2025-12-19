@@ -1,6 +1,6 @@
 import {LiveValue} from '../events.js'
 import {LiveObject} from '../model.js'
-import {Widget} from '../base.js'
+import {Widget, loadWidgets} from '../base.js'
 
 export default class ItemsView extends Widget{
 	#onItemsContentChanged
@@ -16,6 +16,8 @@ export default class ItemsView extends Widget{
 		this.template = this.querySelector('template') 
 			|| this.shadowRoot.querySelector('template#default')
 		this.container = this.shadowRoot.querySelector(this.containerTagName)
+
+		loadWidgets(this.template.content)
 
 		this.#onItemsContentChanged = this.onItemsContentChanged.bind(this)
 	}

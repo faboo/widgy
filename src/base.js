@@ -46,6 +46,7 @@ export function setCustomWidgetBase(urlBase){
 
 
 async function loadWidgetClass(urlBase){
+	// This should only ever download the JS file once (per page load)
 	let module = await import(urlBase+'.js')
 	
 	return module.default
@@ -57,20 +58,27 @@ async function ensureTemplate(tagName, urlBase){
 	let template = document.getElementById(templateId)
 
 	if(!template){
-		let response = await fetch(urlBase+'.html')
-		let text = await response.text()
+		let placeholder = document.createElement('template')
+		let response
+		let text
 
+		// Insert a place-holder template element before we need to await and could lose the thread
+		placeholder.id = templateId
+		document.head.appendChild(placeholder)
+
+		response = await fetch(urlBase+'.html')
+		text = await response.text()
 		template = domParser.parseFromString(text.trim(), 'text/html').querySelector('template')
 		template.id = templateId
 		loadWidgets(template.content)
-		document.querySelector('head').appendChild(template)
+
+		// Swap in the completed template
+		document.head.replaceChild(template, placeholder)
 	}
 }
 
 
 export async function loadWidget(tagName){
-	if(customElements.get(tagName)) return
-
 	let custom = !WIDGY_WIDGETS.includes(tagName)
 	let urlBase = custom
 		? customWidgetBase + '/' + tagName
@@ -79,7 +87,9 @@ export async function loadWidget(tagName){
 
 	await ensureTemplate(tagName, urlBase)
 
-	customElements.define(tagName, widgetClass)
+	if(!customElements.get(tagName)){
+		customElements.define(tagName, widgetClass)
+	}
 }
 
 
@@ -472,6 +482,10 @@ export class Widget extends HTMLElement{
 		return parentNode.host || parentNode.dataContext || window.application
 	}
 
+	addProperty(name, initialValue, onChange, coerceType){
+		addProperty(this, name, initialValue, onChange, coerceType)
+	}
+
 	#createShadow(){
 		const template = document.getElementById('widgy-template-'+this.localName)
 
@@ -482,7 +496,7 @@ export class Widget extends HTMLElement{
 	}
 
 	#addProperties(props){
-		for(let prop of props){
+		for(let prop of props || []){
 			let name = prop[0]
 
 			if(name !== name.toLowerCase())

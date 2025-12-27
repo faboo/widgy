@@ -32,6 +32,8 @@ const WIDGY_WIDGETS =
 	, 'ok-dialog'
 	]
 
+const widgetsLoading = { }
+
 const domParser = new DOMParser()
 
 export const customWidgetBase = BASE.replace(/\/[^/]+$/, '')
@@ -53,43 +55,51 @@ async function loadWidgetClass(urlBase){
 }
 
 
-async function ensureTemplate(tagName, urlBase){
+async function loadTemplate(tagName, urlBase){
 	let templateId = 'widgy-template-'+tagName
 	let template = document.getElementById(templateId)
 
 	if(!template){
-		let placeholder = document.createElement('template')
 		let response
 		let text
-
-		// Insert a place-holder template element before we need to await and could lose the thread
-		placeholder.id = templateId
-		document.head.appendChild(placeholder)
 
 		response = await fetch(urlBase+'.html')
 		text = await response.text()
 		template = domParser.parseFromString(text.trim(), 'text/html').querySelector('template')
 		template.id = templateId
+		document.head.appendChild(template)
 		loadWidgets(template.content)
-
-		// Swap in the completed template
-		document.head.replaceChild(template, placeholder)
 	}
 }
 
 
 export async function loadWidget(tagName){
-	let custom = !WIDGY_WIDGETS.includes(tagName)
-	let urlBase = custom
-		? customWidgetBase + '/' + tagName
-		: BASE + '/widget/' + tagName
-	let widgetClass = await loadWidgetClass(urlBase)
+	if(tagName in widgetsLoading)
+		return widgetsLoading[tagName]
+	
+	if(customElements.get(tagName))
+		return // Short circuit
 
-	await ensureTemplate(tagName, urlBase)
+	return widgetsLoading[tagName] = new Promise(async (resolve, reject) => {
+		try{
+			let custom = !WIDGY_WIDGETS.includes(tagName)
+			let urlBase = custom
+				? customWidgetBase + '/' + tagName
+				: BASE + '/widget/' + tagName
+			let widgetClass = await loadWidgetClass(urlBase)
 
-	if(!customElements.get(tagName)){
-		customElements.define(tagName, widgetClass)
-	}
+			await loadTemplate(tagName, urlBase)
+
+			if(!customElements.get(tagName)){
+				customElements.define(tagName, widgetClass)
+			}
+			resolve()
+			delete widgetsLoading[tagName]
+		}
+		catch(ex){
+			reject(ex)
+		}
+	})
 }
 
 
@@ -386,8 +396,11 @@ export class Binder {
 
 		while(tree.nextNode()){
 			if(tree.currentNode.nodeType == document.ELEMENT_NODE){
-				this.bindAttributes(context, tree.currentNode)
-				bindDragAndDrop(tree.currentNode)
+				//TODO: I don't like this check - can we just not walk these somehow?
+				if(!tree.currentNode.localName.includes('-')){
+					this.bindAttributes(context, tree.currentNode)
+					bindDragAndDrop(tree.currentNode)
+				}
 
 				// TODO: allow a key?
 				if(tree.currentNode.id && tree.currentNode instanceof HTMLDialogElement){
@@ -442,12 +455,13 @@ export class Widget extends HTMLElement{
 	static custom = true
 
 	#bound
+	//dataContext
 
 	constructor(props){
 		super()
 
 		this.#bound = false
-		this.parent = this.findParent()
+		this.parent = null
 		this.binder = new Binder(this)
 
 		addProperty(this, 'shown', null, this.onShownChanged)
@@ -470,19 +484,36 @@ export class Widget extends HTMLElement{
 
 	adoptedCallback(){
 		this.parent = this.findParent()
+		//TODO: rebind?
 	}
 
 	findParent() {
-		let parentNode = this.parentNode
+		let node = this
+		let parentWidget = null
+
+		while(!parentWidget && node){
+			if(node.dataContext)
+				parentWidget = node.dataContext
+			else if(node.host)
+				parentWidget = node.host
+			else
+				node = node.parentNode
+		}
+
+		return parentWidget || window.application
 		
+		/*
 		while(!(parentNode.host || parentNode.dataContext) && parentNode.parentNode){
 			parentNode = parentNode.parentNode
 		}
 
 		return parentNode.host || parentNode.dataContext || window.application
+		*/
 	}
 
 	addProperty(name, initialValue, onChange, coerceType){
+		if(onChange)
+			onChange = onChange.bind(this)
 		addProperty(this, name, initialValue, onChange, coerceType)
 	}
 
@@ -569,6 +600,10 @@ export class Widget extends HTMLElement{
 
 	triggerEvent(name, data){
 		let event = new WidgetEvent(name, this, data)
+
+		if(name.toLowerCase() !== name)
+			console.warn(`Triggered events should be all lowercase - "${name}" is not`)
+
 		this.dispatchEvent(event)
 	}
 

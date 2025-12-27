@@ -11,6 +11,10 @@ export default class ComboBox extends ItemsView{
 			, ['editable', false, ComboBox.prototype.onEditableChanged, Boolean]
 			, ['hideinput', true]
 			])
+	}
+
+	connectedCallback(){
+		super.connectedCallback()
 
 		if(this.items){
 			if(this.querySelector('optgroup, option'))
@@ -18,15 +22,10 @@ export default class ComboBox extends ItemsView{
 		}
 		else{
 			// Slots don't work correctly with optgroup & options
-			for(let optgroup of this.querySelectorAll('optgroup')){
-				this.container.append(optgroup)
-			}
-			for(let option of this.querySelectorAll('option')){
+			for(let option of this.querySelectorAll('option, optgroup')){
 				this.container.append(option)
 			}
 		}
-
-		//this.addEventSlot('onSelect')
 	}
 
 	get containerTagName(){

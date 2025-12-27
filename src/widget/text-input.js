@@ -9,10 +9,12 @@ export default class TextInput extends Widget{
 			, ['placeholder', '']
 			, ['completer']
 			])
+	}
 
-		let input = this.shadowRoot.querySelector('input')
+	connectedCallback(){
+		super.connectedCallback()
 
-		input.addEventListener('keyup', this.completeText.bind(this))
+		this.childKeys.input.addEventListener('keyup', this.completeText.bind(this))
 	}
 
 	async completeText(event){

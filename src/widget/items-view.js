@@ -9,13 +9,13 @@ export default class ItemsView extends Widget{
 
 	constructor(props){
 		super(
-			[ ['items', null, ItemsView.prototype.onItemsChanged]
+			[ ['items', null]
 			, ...(props||[])
 			])
 
 		this.template = this.querySelector('template') 
 			|| this.shadowRoot.querySelector('template#default')
-		this.container = this.shadowRoot.querySelector(this.containerTagName)
+		this.container = null
 
 		loadWidgets(this.template.content)
 
@@ -26,18 +26,32 @@ export default class ItemsView extends Widget{
 		return 'div'
 	}
 
+	connectedCallback(){
+		super.connectedCallback()
+		this.container = this.shadowRoot.querySelector(this.containerTagName)
+		this.itemsProperty.addListener(this.onItemsChanged.bind(this))
+	}
+
 	createItemElement(index, item){
 		let context = LiveObject.create(
 			{ item
-			, index
+			, index: index+1
 			, parent: this.parent
 			})
 		let element = this.template.content.cloneNode(true)
 
-		for(let elm of element.children)
-			this.binder.bindItem(context, elm)
+
+		for(let elm of element.children){
+			elm.dataContext = context
+			elm.setAttribute('part', 'item')
+		}
 
 		return element
+	}
+
+	bindItem(element){
+		for(let elm of element.children)
+			this.binder.bindItem(context, elm)
 	}
 
 	updateItems(){
@@ -48,10 +62,14 @@ export default class ItemsView extends Widget{
 				if(idx < this.container.childElementCount){
 					let element = this.container.children[idx]
 
-					element.item = this.items[idx]
+					element.dataContext.item = this.items.at(idx)
 				}
 				else{
-					this.container.append(this.createItemElement(idx, this.items[idx]))
+					let element = this.createItemElement(idx, this.items.at(idx))
+					//TODO: Appending causes the custom element to connect, causing re-binding
+					// The binder needs to understand that the context object is the the "parent" of this element
+					this.container.append(element)
+					this.bindItem(element)
 				}
 			}
 
@@ -67,7 +85,7 @@ export default class ItemsView extends Widget{
 		this.container.innerHTML = ''
 		this.updateItems()
 
-		if(this.items.addEventListener)
+		if(this.items && this.items.addEventListener)
 			this.items.addEventListener('setvalue', this.#onItemsContentChanged)
 	}
 
